@@ -1,0 +1,30 @@
+:root {
+  /* Background */
+  --bg-base:      #0D0D0D;
+  --bg-surface:   #141414;
+  --bg-elevated:  #1C1C1C;
+  --bg-border:    #2A2A2A;
+
+  /* Text */
+  --text-primary:   #F2F2F0;
+  --text-secondary: #9A9A9A;
+  --text-muted:     #5A5A5A;
+
+  /* Accent — Premortem Red */
+  --accent-red:    #E53E3E;
+  --accent-red-dim: #2D1515;
+
+  /* Risk Severity Colors */
+  --risk-critical: #E53E3E;  /* red */
+  --risk-high:     #DD6B20;  /* orange */
+  --risk-medium:   #D69E2E;  /* amber */
+  --risk-low:      #4A5568;  /* grey */
+
+  /* Mitigation Green */
+  --success:       #38A169;
+
+  /* Typography scale */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
