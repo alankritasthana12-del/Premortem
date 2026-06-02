@@ -6,11 +6,12 @@ import SubmitPage from './pages/SubmitPage';
 import ReportPage from './pages/ReportPage';
 import DashboardPage from './pages/DashboardPage';
 import AuthPage from './pages/AuthPage';
+import './styles/globals.css';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-white">
+      <div style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }} className="min-h-screen">
         <Navbar />
         <main>
           <Routes>

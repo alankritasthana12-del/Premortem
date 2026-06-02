@@ -33,109 +33,94 @@ export default function SubmitPage() {
     }
   };
 
+  const inputStyle = {
+    backgroundColor: 'var(--bg-surface)',
+    borderColor: 'var(--bg-border)',
+    color: 'var(--text-primary)',
+    fontFamily: 'var(--font-mono)'
+  };
+
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Submit Your Startup Idea</h1>
+    <div className="p-8 max-w-2xl mx-auto my-12">
+      <h1 style={{ fontFamily: 'var(--font-display)' }} className="text-3xl font-bold mb-10 uppercase tracking-widest text-center border-b border-gray-800 pb-4">Submit Intelligence</h1>
       
       {loading ? (
-        <div className="flex flex-col items-center justify-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-gray-600">Analyzing your startup idea...</p>
+        <div className="flex flex-col items-center justify-center p-16 border bg-black/20" style={{ borderColor: 'var(--accent-red-dim)' }}>
+          <div style={{ borderTopColor: 'var(--accent-red)' }} className="animate-spin rounded-full h-16 w-16 border-4 border-transparent mb-8"></div>
+          <p style={{ color: 'var(--accent-red)', fontFamily: 'var(--font-mono)' }} className="text-sm uppercase tracking-widest animate-pulse">Running Adversarial Simulations...</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
           <div className="flex flex-col">
-            <label htmlFor="name" className="mb-1 font-semibold">1. Startup Name</label>
+            <label htmlFor="name" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }} className="mb-3 text-xs uppercase tracking-wider">01 // Target Designation (Startup Name)</label>
             <input 
-              type="text" 
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required 
-              className="border border-gray-300 p-2 rounded bg-white text-gray-900"
+              type="text" id="name" name="name" value={formData.name} onChange={handleChange} required 
+              style={inputStyle}
+              className="border p-4 rounded-sm focus:outline-none focus:border-red-500"
               placeholder="e.g. NestMate"
             />
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="idea" className="mb-1 font-semibold">2. Startup Idea</label>
+            <label htmlFor="idea" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }} className="mb-3 text-xs uppercase tracking-wider">02 // Operational Directive (Startup Idea)</label>
             <textarea 
-              id="idea"
-              name="idea"
-              value={formData.idea}
-              onChange={handleChange}
-              required 
-              rows={3}
-              className="border border-gray-300 p-2 rounded bg-white text-gray-900"
-              placeholder="Describe what your startup does..."
+              id="idea" name="idea" value={formData.idea} onChange={handleChange} required rows={4}
+              style={inputStyle}
+              className="border p-4 rounded-sm focus:outline-none focus:border-red-500"
+              placeholder="Describe the mechanics of the operation..."
             />
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="market" className="mb-1 font-semibold">3. Target Market</label>
+            <label htmlFor="market" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }} className="mb-3 text-xs uppercase tracking-wider">03 // Engagement Zone (Target Market)</label>
             <input 
-              type="text" 
-              id="market"
-              name="market"
-              value={formData.market}
-              onChange={handleChange}
-              required 
-              className="border border-gray-300 p-2 rounded bg-white text-gray-900"
-              placeholder="Who are your customers?"
+              type="text" id="market" name="market" value={formData.market} onChange={handleChange} required 
+              style={inputStyle}
+              className="border p-4 rounded-sm focus:outline-none focus:border-red-500"
+              placeholder="Who are the targets?"
             />
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="model" className="mb-1 font-semibold">4. Revenue Model</label>
+            <label htmlFor="model" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }} className="mb-3 text-xs uppercase tracking-wider">04 // Resource Extraction (Revenue Model)</label>
             <input 
-              type="text" 
-              id="model"
-              name="model"
-              value={formData.model}
-              onChange={handleChange}
-              required 
-              className="border border-gray-300 p-2 rounded bg-white text-gray-900"
-              placeholder="How do you make money?"
+              type="text" id="model" name="model" value={formData.model} onChange={handleChange} required 
+              style={inputStyle}
+              className="border p-4 rounded-sm focus:outline-none focus:border-red-500"
+              placeholder="How is capital acquired?"
             />
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="competitors" className="mb-1 font-semibold">5. Main Competitors</label>
+            <label htmlFor="competitors" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }} className="mb-3 text-xs uppercase tracking-wider">05 // Hostile Entities (Main Competitors)</label>
             <input 
-              type="text" 
-              id="competitors"
-              name="competitors"
-              value={formData.competitors}
-              onChange={handleChange}
-              required 
-              className="border border-gray-300 p-2 rounded bg-white text-gray-900"
-              placeholder="Who are you competing against?"
+              type="text" id="competitors" name="competitors" value={formData.competitors} onChange={handleChange} required 
+              style={inputStyle}
+              className="border p-4 rounded-sm focus:outline-none focus:border-red-500"
+              placeholder="Known hostiles in the sector..."
             />
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="stage" className="mb-1 font-semibold">6. Current Stage</label>
+            <label htmlFor="stage" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }} className="mb-3 text-xs uppercase tracking-wider">06 // Current Readiness (Stage)</label>
             <select 
-              id="stage"
-              name="stage"
-              value={formData.stage}
-              onChange={handleChange}
-              required
-              className="border border-gray-300 p-2 rounded bg-white text-gray-900"
+              id="stage" name="stage" value={formData.stage} onChange={handleChange} required
+              style={inputStyle}
+              className="border p-4 rounded-sm focus:outline-none focus:border-red-500"
             >
-              <option value="Idea">Idea</option>
-              <option value="Validation">Validation</option>
-              <option value="Building">Building</option>
-              <option value="Live">Live</option>
+              <option value="Idea">Idea Phase</option>
+              <option value="Validation">Active Validation</option>
+              <option value="Building">Construction</option>
+              <option value="Live">Live Operations</option>
             </select>
           </div>
 
           <button 
             type="submit" 
-            className="bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700 transition mt-4"
+            style={{ backgroundColor: 'var(--accent-red)', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+            className="p-5 mt-6 text-xl font-bold uppercase tracking-widest hover:opacity-90 transition border border-red-900 shadow-lg shadow-red-900/20"
           >
-            Stress Test My Startup
+            Initiate Stress Test
           </button>
         </form>
       )}
