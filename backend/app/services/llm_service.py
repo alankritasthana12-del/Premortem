@@ -1,22 +1,22 @@
 import google.generativeai as genai
 import json
-import re
-from datetime import datetime
 import uuid
+from datetime import datetime
 from app.core.config import settings
-from app.core.prompts import SYSTEM_PROMPT
+from app.core.prompts import get_system_prompt
 from app.models.schemas import StartupSubmission
 
-# Initialize the Gemini client
+# Initialize the Gemini client configuration
 genai.configure(api_key=settings.GEMINI_API_KEY)
 
-# Use Gemini 2.5 Flash as requested
-model = genai.GenerativeModel(
-    model_name="gemini-2.5-flash",
-    system_instruction=SYSTEM_PROMPT,
-)
-
-async def generate_premortem_report(startup_data: StartupSubmission) -> dict:
+async def generate_premortem_report(startup_data: StartupSubmission, context: str = "") -> dict:
+    # Initialize the model dynamically with the context-injected system prompt
+    system_instruction = get_system_prompt(context)
+    model = genai.GenerativeModel(
+        model_name="gemini-2.5-flash",
+        system_instruction=system_instruction,
+    )
+    
     prompt = f"""
     Analyze the following startup:
     Name: {startup_data.name}
