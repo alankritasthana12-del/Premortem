@@ -17,6 +17,8 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/submit" element={<SubmitPage />} />
+            {/* FIX: Added a path for standard /report so the form submission lands perfectly */}
+            <Route path="/report" element={<ReportPage />} />
             <Route path="/report/:id" element={<ReportPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/auth" element={<AuthPage />} />

@@ -1,253 +1,319 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 
-const CircularProgress = ({ score }) => {
-  const radius = 60;
-  const circumference = 2 * Math.PI * radius;
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    // Smoothly animate the progress fill on component mount
-    const timer = setTimeout(() => setProgress(score), 100);
-    return () => clearTimeout(timer);
-  }, [score]);
-
-  const offset = circumference - (progress / 100) * circumference;
-
-  let color = '#10B981'; // Safe Green
-  let glow = 'rgba(16, 185, 129, 0.4)';
-  if (score > 40) {
-    color = '#F59E0B'; // Amber Warning
-    glow = 'rgba(245, 158, 11, 0.4)';
-  }
-  if (score > 70) {
-    color = '#EF4444'; // Critical Red
-    glow = 'rgba(239, 68, 68, 0.5)';
-  }
-
+// ─── Severity Badge ───────────────────────────────────────────────────────────
+const SeverityBadge = ({ severity }) => {
+  const s = severity?.toUpperCase();
+  const styles = {
+    CRITICAL: { color: 'var(--risk-critical)', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' },
+    HIGH:     { color: 'var(--risk-high)',     bg: 'rgba(249,115,22,0.1)', border: 'rgba(249,115,22,0.25)' },
+    MEDIUM:   { color: 'var(--risk-medium)',   bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' },
+    LOW:      { color: 'var(--text-secondary)',bg: 'var(--bg-elevated)',   border: 'var(--bg-border)' },
+  };
+  const st = styles[s] || styles.LOW;
   return (
-    <div className="relative flex items-center justify-center">
-      <svg className="transform -rotate-90 w-40 h-40">
-        <circle
-          cx="80"
-          cy="80"
-          r={radius}
-          stroke="#1E293B"
-          strokeWidth="8"
-          fill="transparent"
-        />
-        <circle
-          cx="80"
-          cy="80"
-          r={radius}
-          stroke={color}
-          strokeWidth="8"
-          fill="transparent"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className="transition-all duration-1000 ease-out"
-          style={{ filter: `drop-shadow(0 0 10px ${glow})` }}
-        />
-      </svg>
-      <div className="absolute flex flex-col items-center justify-center">
-        <span className="text-5xl font-black text-white" style={{ fontFamily: 'var(--font-display)' }}>{progress}</span>
-        <span className="text-[10px] text-[#94A3B8] font-mono uppercase tracking-widest mt-1">Threat Level</span>
+    <span
+      className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded flex-shrink-0"
+      style={{ color: st.color, backgroundColor: st.bg, border: `1px solid ${st.border}` }}
+    >
+      {severity}
+    </span>
+  );
+};
+
+// ─── Signup Modal ─────────────────────────────────────────────────────────────
+const SignupModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
+      <div 
+        className="relative w-full max-w-sm rounded-2xl border p-8 shadow-2xl"
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}
+      >
+        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-5 mx-auto" style={{ backgroundColor: 'var(--accent-dim)', border: '1px solid var(--accent-border)' }}>
+          <svg className="w-6 h-6" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-bold text-center mb-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Save Your Report</h3>
+        <p className="text-sm text-center mb-8" style={{ color: 'var(--text-secondary)' }}>
+          Sign in to save this analysis to your history. If you leave without saving, this link will expire.
+        </p>
+        
+        <button
+          onClick={onClose} // Mocking successful sign in by just closing for now
+          className="w-full flex items-center justify-center gap-3 text-sm font-semibold px-4 py-3 rounded-lg transition-all border mb-3"
+          style={{ 
+            backgroundColor: 'var(--bg-elevated)', 
+            color: 'var(--text-primary)',
+            borderColor: 'var(--bg-border)'
+          }}
+        >
+          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Sign in with Google
+        </button>
+
+        <button onClick={onClose} className="w-full text-xs font-medium text-center hover:underline" style={{ color: 'var(--text-muted)' }}>
+          Continue without saving
+        </button>
       </div>
     </div>
   );
 };
 
+// ─── Persona Card (Fully Expanded) ────────────────────────────────────────────
+const ExpandedPersonaCard = ({ persona }) => {
+  return (
+    <div
+      className="rounded-xl border overflow-hidden h-fit"
+      style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-4 px-5 py-4 border-b" style={{ borderColor: 'var(--bg-border)' }}>
+        <div
+          className="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0"
+          style={{ backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--bg-border)' }}
+        >
+          {persona.icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-base leading-tight" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+            {persona.name}
+          </p>
+        </div>
+      </div>
+
+      {/* Risks */}
+      <div className="divide-y" style={{ borderColor: 'var(--bg-border)' }}>
+        {persona.risks?.map((risk, i) => (
+          <div key={i} className="p-5">
+            <div className="flex items-start gap-3 mb-3">
+              <SeverityBadge severity={risk.severity} />
+              <p className="text-sm font-bold" style={{ color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                {risk.title}
+              </p>
+            </div>
+            
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              {risk.description}
+            </p>
+
+            {/* Suggested Fix (Always visible) */}
+            <div
+              className="p-3.5 rounded-lg border flex items-start gap-3"
+              style={{ backgroundColor: 'rgba(34,197,94,0.06)', borderColor: 'rgba(34,197,94,0.15)' }}
+            >
+              <svg className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--success)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--success)' }}>Suggested Fix</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  {risk.mitigation}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Report Page ─────────────────────────────────────────────────────────
 export default function ReportPage() {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const report = location.state?.report;
+  const isNew = location.state?.isNew;
+  
+  const [showSignup, setShowSignup] = useState(false);
+
+  useEffect(() => {
+    if (isNew) {
+      // Small delay for dramatic effect after loading
+      const t = setTimeout(() => setShowSignup(true), 800);
+      return () => clearTimeout(t);
+    }
+  }, [isNew]);
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-[#0B0F19] text-red-500 flex items-center justify-center font-mono">
-        <div className="border border-red-900 p-8 bg-red-950/20 text-center max-w-md">
-          <h2 className="text-xl mb-4 uppercase tracking-widest font-bold">Error: Link Severed</h2>
-          <p className="text-sm text-red-400">No report payload detected in memory buffer. The session may have expired.</p>
-          <Link to="/dashboard" className="inline-block mt-8 text-white hover:text-red-400 transition">&lt; Return to Command Center</Link>
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: 'var(--bg-base)', fontFamily: 'var(--font-body)' }}>
+        <div className="text-center max-w-sm">
+          <h2 className="font-bold mb-2 text-xl" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Report not found</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>This link has expired. Open it from your history.</p>
+          <Link to="/dashboard" className="px-5 py-2.5 rounded-lg font-semibold text-sm" style={{ backgroundColor: 'var(--accent)', color: 'white' }}>Go to My Reports</Link>
         </div>
       </div>
     );
   }
 
-  const getSeverityStyles = (severity) => {
-    switch (severity?.toUpperCase()) {
-      case 'CRITICAL':
-        return 'bg-red-500 text-white animate-pulse border-red-400 shadow-[0_0_12px_rgba(239,68,68,0.5)]';
-      case 'HIGH':
-        return 'bg-[#F59E0B] text-black border-amber-400';
-      case 'MEDIUM':
-        return 'bg-[#475569] text-white border-slate-400';
-      case 'LOW':
-        return 'bg-[#1E293B] text-slate-300 border-slate-600';
-      default:
-        return 'bg-gray-800 text-gray-300 border-gray-700';
-    }
-  };
+  const risk = report.overallRisk || 0;
+  const riskLabel = risk > 70 ? 'High Risk' : risk > 40 ? 'Medium Risk' : 'Lower Risk';
+  const riskColor = risk > 70 ? 'var(--risk-critical)' : risk > 40 ? 'var(--risk-medium)' : 'var(--success)';
+
+  // Calculate highest risk per persona for the bar chart
+  const personaScores = report.personas?.map(p => {
+    let maxScore = 1; // LOW
+    p.risks?.forEach(r => {
+      const s = r.severity?.toUpperCase();
+      if (s === 'CRITICAL') maxScore = 4;
+      else if (s === 'HIGH' && maxScore < 4) maxScore = 3;
+      else if (s === 'MEDIUM' && maxScore < 3) maxScore = 2;
+    });
+    return { name: p.name, score: maxScore };
+  }) || [];
+
+  // Sort by score descending (highest risk first)
+  personaScores.sort((a, b) => b.score - a.score);
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-gray-200 p-4 md:p-8 pb-20 font-sans">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
+      <SignupModal isOpen={showSignup} onClose={() => setShowSignup(false)} />
+
+      {/* ── Slim top bar ─────────────────────────────── */}
+      <div className="sticky top-0 z-40 border-b" style={{ backgroundColor: 'rgba(0,0,0,0.85)', borderColor: 'var(--bg-border)', backdropFilter: 'blur(16px)' }}>
+        <div className="max-w-7xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <Link to="/dashboard" className="text-xs font-semibold hover:text-white transition-colors flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+              My Reports
+            </Link>
+            <span style={{ color: 'var(--bg-border)' }}>/</span>
+            <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>{id.slice(0,8).toUpperCase()}</span>
+          </div>
+          <button onClick={() => setShowSignup(true)} className="text-xs font-semibold px-3 py-1.5 rounded border hover:bg-white/5 transition-colors" style={{ color: 'var(--text-primary)', borderColor: 'var(--bg-border)' }}>
+            Save Report
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-5 py-10 pb-24">
         
-        {/* Top Navigation Control */}
-        <div className="mb-10">
-          <Link to="/dashboard" className="text-xs font-mono uppercase tracking-widest text-[#94A3B8] hover:text-white transition flex items-center gap-2 w-max border border-transparent hover:border-[#334155] p-2 rounded-sm">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Command Center
-          </Link>
-        </div>
-
-        {/* Top Hero Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        {/* ══ HEADER DASHBOARD ══════════════════════════════════════════════════════ */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
           
-          {/* Designation Block */}
-          <div className="lg:col-span-2 border border-[#1E293B] bg-[#0F172A] p-8 md:p-10 rounded-sm relative overflow-hidden shadow-xl shadow-black/40">
-            <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600"></div>
-            <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-6">
-              <div>
-                <h1 className="text-5xl md:text-6xl font-black uppercase tracking-wider text-white mb-3" style={{ fontFamily: 'var(--font-display)' }}>
-                  {report.startup.name}
-                </h1>
-                <p className="text-[#94A3B8] font-mono text-sm tracking-widest uppercase">
-                  Target Designation // {id || report.id}
-                </p>
+          {/* Main Info Card */}
+          <div className="lg:col-span-2 rounded-2xl border p-8 flex flex-col justify-between" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}>
+            <div>
+              <div className="flex items-center gap-3 mb-5">
+                <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ color: riskColor, backgroundColor: `${riskColor}22`, border: `1px solid ${riskColor}44` }}>
+                  {riskLabel}
+                </span>
+                <span className="text-sm font-mono" style={{ color: 'var(--text-muted)' }}>{report.createdAt}</span>
               </div>
-              <div className="md:text-right bg-[#0B0F19] border border-[#1E293B] px-4 py-3 rounded-sm flex-shrink-0">
-                <p className="text-[10px] font-mono text-[#94A3B8] uppercase tracking-widest mb-1">Generated On</p>
-                <p className="text-white font-mono text-sm">{report.createdAt}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 pt-8 border-t border-[#1E293B]">
-              <div>
-                <p className="text-xs text-[#94A3B8] font-mono uppercase tracking-widest mb-2">Engagement Zone</p>
-                <p className="text-sm font-semibold text-slate-200">{report.startup.market}</p>
-              </div>
-              <div>
-                <p className="text-xs text-[#94A3B8] font-mono uppercase tracking-widest mb-2">Readiness Stage</p>
-                <p className="text-sm font-semibold text-white">{report.startup.stage}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Radial Threat Gauge */}
-          <div className="border border-[#1E293B] bg-[#0F172A] p-8 rounded-sm flex flex-col items-center justify-center shadow-xl shadow-black/40">
-            <h2 className="text-[#94A3B8] font-mono text-sm uppercase tracking-widest mb-8 text-center">Aggregate Risk Profile</h2>
-            <CircularProgress score={report.overallRisk || 0} />
-          </div>
-        </div>
-
-        {/* The Challenger Path Component */}
-        {report?.challengerPath && (
-          <div className="mb-20 border border-[#1E293B] bg-[#0F172A] rounded-sm overflow-hidden shadow-xl shadow-black/40">
-            <div className="bg-[#1E293B]/40 px-6 md:px-8 py-5 border-b border-[#1E293B] flex items-center gap-3">
-              <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-              <h2 className="text-xl font-bold uppercase tracking-widest text-white" style={{ fontFamily: 'var(--font-display)' }}>The Challenger Path</h2>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>
+                {report.startup?.name}
+              </h1>
+              <p className="text-base mb-8 max-w-xl" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                {report.startup?.idea}
+              </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#1E293B]">
-              {/* Survival Metric */}
-              <div className="p-8 md:p-10 flex flex-col items-center justify-center bg-indigo-950/10 text-center">
-                <span className="text-[#94A3B8] font-mono text-xs uppercase tracking-widest mb-6">Historical Survival Prob.</span>
-                <span className="text-6xl font-black text-indigo-400 drop-shadow-[0_0_15px_rgba(129,140,248,0.3)]">{report.challengerPath.successRate || "Unknown"}</span>
+            <div className="grid grid-cols-3 gap-4 border-t pt-5" style={{ borderColor: 'var(--bg-border)' }}>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Target Market</p>
+                <p className="text-sm font-medium truncate">{report.startup?.market}</p>
               </div>
-              
-              {/* Known Successes List */}
-              <div className="col-span-2 p-8 md:p-10 bg-[#0B0F19]">
-                <span className="text-[#94A3B8] font-mono text-xs uppercase tracking-widest mb-6 block">Known Operational Precedents</span>
-                {report.challengerPath.whatWorked && report.challengerPath.whatWorked.length > 0 ? (
-                  <ul className="space-y-5">
-                    {report.challengerPath.whatWorked.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-4">
-                        <div className="mt-0.5 bg-emerald-950/50 p-1.5 rounded-sm border border-emerald-800/50 flex-shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-                          <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
-                        </div>
-                        <span className="text-slate-300 leading-relaxed text-sm">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-slate-500 italic text-sm">No historical precedent data available in the knowledge graph.</p>
-                )}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Revenue Model</p>
+                <p className="text-sm font-medium truncate">{report.startup?.model}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Current Stage</p>
+                <p className="text-sm font-medium truncate">{report.startup?.stage}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Risk Graph / Score Card */}
+          <div className="rounded-2xl border p-8 flex flex-col" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}>
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Overall Risk</p>
+                <p className="text-6xl font-black tabular-nums leading-none" style={{ color: riskColor, fontFamily: 'var(--font-display)', letterSpacing: '-0.05em' }}>{risk}</p>
+              </div>
+              <p className="text-xs font-mono mb-2" style={{ color: 'var(--text-muted)' }}>/100</p>
+            </div>
+
+            {/* Risk Distribution Bar Chart */}
+            <div className="flex-1 flex flex-col justify-end gap-3 mt-4">
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Risk by Persona</p>
+              {personaScores.map((p, idx) => {
+                const width = p.score === 4 ? '100%' : p.score === 3 ? '75%' : p.score === 2 ? '50%' : '25%';
+                // Shiny modern gradients instead of flat crayons
+                const bg = p.score === 4 ? 'linear-gradient(90deg, #ef4444 0%, #fca5a5 100%)' 
+                         : p.score === 3 ? 'linear-gradient(90deg, #f97316 0%, #fdba74 100%)' 
+                         : p.score === 2 ? 'linear-gradient(90deg, #f59e0b 0%, #fcd34d 100%)' 
+                         : 'linear-gradient(90deg, #94a3b8 0%, #cbd5e1 100%)';
+                const shadow = p.score === 4 ? '0 0 12px rgba(239,68,68,0.4)'
+                             : p.score === 3 ? '0 0 12px rgba(249,115,22,0.4)'
+                             : p.score === 2 ? '0 0 12px rgba(245,158,11,0.4)'
+                             : 'none';
+                return (
+                  <div key={idx} className="flex items-center gap-3">
+                    <span className="text-[11px] font-medium w-24 truncate" style={{ color: 'var(--text-secondary)' }} title={p.name}>{p.name}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-[#1A1A1A] overflow-visible relative">
+                      <div className="absolute top-0 left-0 h-full rounded-full transition-all duration-1000" style={{ width, background: bg, boxShadow: shadow }}></div>
+                    </div>
+                    <span className="text-[10px] font-mono w-8 text-right" style={{ color: 'var(--text-muted)' }}>{width}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ══ SURVIVAL PATH ══════════════════════════════════════════════════════ */}
+        {report?.challengerPath && (
+          <div className="mb-12">
+            <h2 className="text-xl font-bold mb-5" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>Historical Precedents</h2>
+            <div className="rounded-2xl border p-8 grid grid-cols-1 md:grid-cols-4 gap-8" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}>
+              <div className="md:col-span-1 border-r-0 md:border-r border-b md:border-b-0 pb-6 md:pb-0 md:pr-6" style={{ borderColor: 'var(--bg-border)' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Survival Rate</p>
+                <p className="text-5xl font-black mb-2" style={{ color: 'var(--accent)', fontFamily: 'var(--font-display)', letterSpacing: '-0.04em' }}>{report.challengerPath.successRate || '—'}</p>
+                <p className="text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>Of comparable startups survive beyond 3 years.</p>
+              </div>
+              <div className="md:col-span-3">
+                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-muted)' }}>What tends to work in this space</p>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {report.challengerPath.whatWorked?.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                      <svg className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--success)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
         )}
 
-        {/* Separator */}
-        <div className="mb-12 flex items-center gap-6 opacity-80">
-          <div className="h-px bg-[#1E293B] flex-grow"></div>
-          <h2 className="text-2xl font-bold uppercase tracking-widest text-white flex items-center gap-3" style={{ fontFamily: 'var(--font-display)' }}>
-            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            Adversarial Vectors
+        {/* ══ MASONRY GRID OF PERSONAS ══════════════════════════════════════════════ */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+            Adversarial Breakdown
+            <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border" style={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--bg-border)', color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>7 Perspectives</span>
           </h2>
-          <div className="h-px bg-[#1E293B] flex-grow"></div>
-        </div>
-
-        {/* Persona Grid */}
-        {report?.personas && report.personas.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {report.personas.map((persona) => (
-              <div key={persona.id || persona.name} className="border border-[#1E293B] bg-[#0F172A] rounded-sm flex flex-col overflow-hidden shadow-xl shadow-black/50 hover:border-[#334155] transition duration-300">
-                
-                {/* Header */}
-                <div className="bg-[#1E293B]/30 px-6 py-5 border-b border-[#1E293B] flex items-center gap-4 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl transform translate-x-10 -translate-y-10"></div>
-                  <div className="bg-[#0B0F19] w-12 h-12 flex items-center justify-center rounded-sm border border-[#334155] text-2xl shadow-inner z-10 flex-shrink-0">
-                    {persona.icon}
-                  </div>
-                  <h3 className="text-lg font-bold text-white uppercase tracking-wider leading-tight z-10">{persona.name}</h3>
-                </div>
-
-                {/* Body Content */}
-                <div className="flex-grow flex flex-col">
-                  {persona.risks && persona.risks.map((risk, idx) => (
-                    <div key={idx} className="flex flex-col flex-grow">
-                      
-                      {/* Risk Header */}
-                      <div className="p-6 pb-5">
-                        <div className="flex items-start justify-between gap-4">
-                          <h4 className="font-bold text-white text-base leading-relaxed">{risk.title}</h4>
-                          <span className={`text-[10px] font-bold px-2 py-1 uppercase tracking-widest rounded-sm border flex-shrink-0 ${getSeverityStyles(risk.severity)}`}>
-                            {risk.severity}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Analysis Block */}
-                      <div className="bg-[#0B0F19] px-6 py-5 border-t border-[#1E293B] relative">
-                        <div className="absolute top-6 left-0 w-1 h-8 bg-[#334155] rounded-r-sm"></div>
-                        <span className="text-xs font-mono text-[#94A3B8] uppercase tracking-widest mb-3 flex items-center gap-2">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                          Analysis
-                        </span>
-                        <p className="text-slate-300 text-sm leading-relaxed">{risk.description}</p>
-                      </div>
-
-                      {/* Mitigation Block */}
-                      <div className="bg-emerald-950/10 px-6 py-5 border-t border-[#1E293B] relative flex-grow">
-                        <div className="absolute top-6 left-0 w-1 h-8 bg-emerald-700/60 rounded-r-sm"></div>
-                        <span className="text-xs font-mono text-emerald-500/80 uppercase tracking-widest mb-3 flex items-center gap-2">
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                          Countermeasure
-                        </span>
-                        <p className="text-slate-200 text-sm leading-relaxed">{risk.mitigation}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          
+          <div className="columns-1 md:columns-2 gap-6 space-y-6">
+            {report?.personas?.map((persona, i) => (
+              <div key={i} className="break-inside-avoid">
+                <ExpandedPersonaCard persona={persona} />
               </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center p-16 border border-dashed border-[#334155] rounded-sm bg-[#0F172A]">
-            <p className="text-[#94A3B8] font-mono uppercase tracking-widest text-sm">No adversarial vectors detected.</p>
-          </div>
-        )}
+        </div>
 
       </div>
     </div>

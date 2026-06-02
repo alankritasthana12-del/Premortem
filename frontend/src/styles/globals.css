@@ -1,30 +1,55 @@
 :root {
-  /* Background */
-  --bg-base:      #0D0D0D;
-  --bg-surface:   #141414;
-  --bg-elevated:  #1C1C1C;
-  --bg-border:    #2A2A2A;
+  /* ─── Backgrounds ─────────────────────────────── */
+  --bg-base:       #000000;   /* Pure Black */
+  --bg-surface:    #0A0A0A;   /* Very dark grey for cards */
+  --bg-elevated:   #141414;   /* Slightly lighter for inner containers/hover */
+  --bg-border:     #262626;   /* Clean neutral border */
 
-  /* Text */
-  --text-primary:   #F2F2F0;
-  --text-secondary: #9A9A9A;
-  --text-muted:     #5A5A5A;
+  /* ─── Text ────────────────────────────────────── */
+  --text-primary:   #FFFFFF;  /* Pure white */
+  --text-secondary: #A3A3A3;  /* Bright crisp grey for body text */
+  --text-muted:     #737373;  /* Subdued text for labels */
 
-  /* Accent — Premortem Red */
-  --accent-red:    #E53E3E;
-  --accent-red-dim: #2D1515;
+  /* ─── Accent (shiny modern) ───────────────────── */
+  --accent:       #A855F7;    /* Electric Purple */
+  --accent-light: #C084FC;
+  --accent-gradient: linear-gradient(135deg, #A855F7 0%, #6366F1 100%);
+  --accent-glow:  0 0 24px rgba(168, 85, 247, 0.4);
+  --accent-hover: #9333EA;
+  --accent-dim:   #1b0c2e;    /* Deep tinted bg */
+  --accent-border:#3b1e5a;
 
-  /* Risk Severity Colors */
-  --risk-critical: #E53E3E;  /* red */
-  --risk-high:     #DD6B20;  /* orange */
-  --risk-medium:   #D69E2E;  /* amber */
-  --risk-low:      #4A5568;  /* grey */
+  /* ─── Report severity (shiny modern) ────────── */
+  --risk-critical: #EF4444;   
+  --risk-critical-grad: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+  --risk-high:     #F97316;   
+  --risk-high-grad: linear-gradient(135deg, #F97316 0%, #FDBA74 100%);
+  --risk-medium:   #F59E0B;   
+  --risk-medium-grad: linear-gradient(135deg, #F59E0B 0%, #FCD34D 100%);
+  --risk-low:      #94A3B8;   
+  --risk-low-grad: linear-gradient(135deg, #94A3B8 0%, #CBD5E1 100%);
+  --success:       #22C55E;   
+  --success-grad: linear-gradient(135deg, #22C55E 0%, #4ADE80 100%);
 
-  /* Mitigation Green */
-  --success:       #38A169;
+  /* ─── Typography ──────────────────────────────── */
+  --font-display:  'Syne', sans-serif;
+  --font-body:     'DM Sans', sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
+}
 
-  /* Typography scale */
-  --font-display: 'Syne', sans-serif;
-  --font-body:    'DM Sans', sans-serif;
-  --font-mono:    'JetBrains Mono', monospace;
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+select option {
+  background-color: #141414;
+  color: #FFFFFF;
 }
