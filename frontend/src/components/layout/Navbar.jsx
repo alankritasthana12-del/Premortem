@@ -8,9 +8,7 @@ export default function Navbar() {
         <span style={{ color: 'var(--accent-red)' }}>//</span> PREMORTEM
       </Link>
       <Link to="/submit" style={{ color: 'var(--text-secondary)' }} className="hover:text-white transition">Submit</Link>
-      <Link to="/report/rpt_001" style={{ color: 'var(--text-secondary)' }} className="hover:text-white transition">Report</Link>
       <Link to="/dashboard" style={{ color: 'var(--text-secondary)' }} className="hover:text-white transition">Dashboard</Link>
-      <Link to="/auth" style={{ color: 'var(--text-secondary)' }} className="hover:text-white transition">Auth</Link>
     </nav>
   );
 }

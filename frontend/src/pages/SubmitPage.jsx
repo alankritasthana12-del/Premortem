@@ -25,8 +25,13 @@ export default function SubmitPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const report = await submitIdea(formData);
-      navigate(`/report/${report.id}`);
+      const result = await submitIdea(formData);
+      
+      const history = JSON.parse(localStorage.getItem('premortem_history') || '[]');
+      history.unshift(result);
+      localStorage.setItem('premortem_history', JSON.stringify(history));
+
+      navigate(`/report/${result.id}`, { state: { report: result } });
     } catch (error) {
       console.error(error);
       setLoading(false);
