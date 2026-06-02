@@ -5,7 +5,8 @@ from app.services.rag_service import get_relevant_context
 
 router = APIRouter()
 
-@router.post("/")
+# CHANGE HERE: Remove the "/" to prevent trailing slash redirects
+@router.post("")
 async def analyze_startup(startup_data: StartupSubmission):
     try:
         # Retrieve relevant historical context based on idea and market
