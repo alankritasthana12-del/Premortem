@@ -1,396 +1,215 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { submitIdea } from '../lib/api';
+import { useAuth } from '../contexts/AuthContext';
 
-// ─── Loading Progress Steps ───────────────────────────────────────────────────
-const LOADING_STEPS = [
-  { label: 'Reading your submission...', duration: 2500 },
-  { label: 'Reviewing your market and competition...', duration: 4000 },
-  { label: 'Investor perspective: checking fundability and scale...', duration: 5000 },
-  { label: 'Customer perspective: evaluating value and pricing...', duration: 4500 },
-  { label: 'Technical perspective: assessing feasibility...', duration: 4000 },
-  { label: 'Financial perspective: modelling runway risks...', duration: 4000 },
-  { label: 'Cross-referencing real startup failure cases...', duration: 4000 },
-  { label: 'Compiling your failure report...', duration: 3000 },
+const STEPS = [
+  { label:'Reading your submission…',                  duration:2000 },
+  { label:'Reviewing market & competition…',            duration:3500 },
+  { label:'Investor: checking scale & fundability…',    duration:4500 },
+  { label:'Customer: evaluating value & pricing…',      duration:4000 },
+  { label:'Engineer: assessing technical risk…',        duration:3500 },
+  { label:'Finance: modelling runway & burn…',          duration:3500 },
+  { label:'Founder\'s Mirror: challenging the team…',   duration:4000 },
+  { label:'Cross-referencing real failure cases…',      duration:3500 },
+  { label:'Compiling your failure report…',             duration:2500 },
 ];
 
 function LoadingScreen() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [progress, setProgress] = useState(4);
+  const [step, setStep]   = useState(0);
+  const [pct,  setPct]    = useState(2);
 
   useEffect(() => {
-    let elapsed = 0;
-    const total = LOADING_STEPS.reduce((s, step) => s + step.duration, 0);
-    let stepIdx = 0;
-
-    const interval = setInterval(() => {
+    let elapsed = 0, si = 0;
+    const total = STEPS.reduce((a,s)=>a+s.duration,0);
+    const iv = setInterval(()=>{
       elapsed += 120;
-      const pct = Math.min(Math.round((elapsed / total) * 100), 96);
-      setProgress(pct);
-
-      let cumulative = 0;
-      for (let i = 0; i < LOADING_STEPS.length; i++) {
-        cumulative += LOADING_STEPS[i].duration;
-        if (elapsed < cumulative) {
-          if (i !== stepIdx) {
-            stepIdx = i;
-            setCurrentStep(i);
-          }
-          break;
-        }
-      }
-    }, 120);
-
-    return () => clearInterval(interval);
-  }, []);
+      setPct(Math.min(Math.round(elapsed/total*100),96));
+      let c = 0;
+      for (let i=0;i<STEPS.length;i++) { c+=STEPS[i].duration; if(elapsed<c){if(i!==si){si=i;setStep(i);}break;} }
+    },120);
+    return ()=>clearInterval(iv);
+  },[]);
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-6"
-      style={{ backgroundColor: 'var(--bg-base)', fontFamily: 'var(--font-body)' }}
-    >
-      <div className="w-full max-w-md">
-
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:24, background:'var(--bg-base)', fontFamily:'var(--font-body)' }}>
+      <div style={{ width:'100%', maxWidth:440 }}>
         {/* Icon */}
-        <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-8"
-          style={{ backgroundColor: 'var(--accent-dim)', border: '1px solid var(--accent-border)' }}
-        >
-          <svg className="w-7 h-7" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .28 2.716-1.262 2.716H4.06c-1.542 0-2.262-1.716-1.261-2.716L4 15.3" />
-          </svg>
-        </div>
-
-        {/* Headline */}
-        <h2
-          className="text-center font-semibold mb-2"
-          style={{ color: 'var(--text-primary)', fontSize: '1.25rem', letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}
-        >
-          Analyzing your startup
-        </h2>
-        <p className="text-center text-sm mb-10" style={{ color: 'var(--text-secondary)' }}>
-          7 perspectives are reviewing your idea right now
-        </p>
-
-        {/* Progress Bar */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
-              {LOADING_STEPS[currentStep]?.label}
-            </span>
-            <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--accent)' }}>
-              {progress}%
-            </span>
-          </div>
-          <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-elevated)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-150 ease-out"
-              style={{ width: `${progress}%`, backgroundColor: 'var(--accent)', boxShadow: '0 0 10px rgba(124,107,219,0.5)' }}
-            />
+        <div style={{ display:'flex', justifyContent:'center', marginBottom:32 }}>
+          <div style={{ width:64, height:64, borderRadius:18, background:'var(--accent-dim)', border:'1px solid var(--accent-border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="30" height="30" fill="none" stroke="var(--accent-bright)" strokeWidth="1.75" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .28 2.716-1.262 2.716H4.06c-1.542 0-2.262-1.716-1.261-2.716L4 15.3"/>
+            </svg>
           </div>
         </div>
 
-        {/* Step List */}
-        <div
-          className="rounded-xl border p-4 space-y-3"
-          style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}
-        >
-          {LOADING_STEPS.map((step, i) => {
-            const done = i < currentStep;
-            const active = i === currentStep;
+        <h2 style={{ textAlign:'center', fontFamily:'var(--font-display)', fontWeight:700, fontSize:22, color:'var(--text-primary)', marginBottom:6, letterSpacing:'-0.02em' }}>Analyzing your startup</h2>
+        <p style={{ textAlign:'center', color:'var(--text-secondary)', fontSize:14, marginBottom:32 }}>8 adversarial perspectives reviewing your idea</p>
+
+        {/* Progress bar */}
+        <div style={{ marginBottom:24 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+            <span style={{ color:'var(--text-secondary)', fontSize:12 }}>{STEPS[step]?.label}</span>
+            <span style={{ color:'var(--accent-bright)', fontSize:12, fontWeight:700 }}>{pct}%</span>
+          </div>
+          <div className="pm-progress-track">
+            <div className="pm-progress-fill" style={{ width:`${pct}%` }}/>
+          </div>
+        </div>
+
+        {/* Step list */}
+        <div style={{ background:'var(--bg-surface)', border:'1px solid var(--bg-border)', borderRadius:16, padding:20, display:'flex', flexDirection:'column', gap:12 }}>
+          {STEPS.map((s,i) => {
+            const done=i<step, active=i===step;
             return (
-              <div key={i} className="flex items-center gap-3">
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:12 }}>
                 {done ? (
-                  <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}
-                  >
-                    <svg className="w-3 h-3" style={{ color: '#4ADE80' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
+                  <div style={{ width:20, height:20, borderRadius:'50%', background:'rgba(46,204,113,0.15)', border:'1px solid rgba(46,204,113,0.35)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <svg width="10" height="10" fill="none" stroke="var(--success)" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                   </div>
                 ) : active ? (
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ border: '1px solid var(--accent-border)' }}>
-                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent)' }}></div>
+                  <div style={{ width:20, height:20, borderRadius:'50%', background:'var(--accent-dim)', border:'1px solid var(--accent-border)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <div style={{ width:7, height:7, borderRadius:'50%', background:'var(--accent)', animation:'blink 1.5s infinite' }}/>
                   </div>
                 ) : (
-                  <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ border: '1px solid var(--bg-border)' }}></div>
+                  <div style={{ width:20, height:20, borderRadius:'50%', border:'1px solid var(--bg-border-strong)', flexShrink:0 }}/>
                 )}
-                <span
-                  className="text-xs"
-                  style={{
-                    color: done ? '#4ADE80' : active ? 'var(--text-primary)' : 'var(--text-muted)',
-                    fontWeight: active ? '500' : '400',
-                    transition: 'color 0.3s',
-                  }}
-                >
-                  {step.label}
+                <span style={{ fontSize:12, color: done?'var(--success)':active?'var(--text-primary)':'var(--text-muted)', fontWeight:active?500:400, transition:'color 0.3s' }}>
+                  {s.label}
                 </span>
               </div>
             );
           })}
         </div>
-
-        <p className="text-center text-xs mt-6" style={{ color: 'var(--text-muted)' }}>
-          This usually takes 20 – 40 seconds
-        </p>
+        <p style={{ textAlign:'center', color:'var(--text-muted)', fontSize:12, marginTop:16 }}>Usually takes 20–40 seconds</p>
       </div>
     </div>
   );
 }
 
-// ─── Field definitions ────────────────────────────────────────────────────────
 const FIELDS = [
-  {
-    name: 'name',
-    label: 'Startup Name',
-    hint: 'What is your startup called?',
-    placeholder: 'e.g. Airbnb, Dropbox, Stripe',
-    type: 'input',
-  },
-  {
-    name: 'idea',
-    label: 'What does it do?',
-    hint: 'Explain what your startup does and the problem it solves — in plain English.',
-    placeholder: 'e.g. We help landlords manage short-term rental properties without needing an agency. Landlords list their property, we handle pricing, bookings, and guest support...',
-    type: 'textarea',
-    rows: 4,
-  },
-  {
-    name: 'market',
-    label: 'Who is it for?',
-    hint: 'Describe your target customer — be specific.',
-    placeholder: 'e.g. First-time landlords in metro cities who own 1–3 properties and lack the time to self-manage',
-    type: 'input',
-  },
-  {
-    name: 'model',
-    label: 'How do you make money?',
-    hint: 'Describe your revenue model.',
-    placeholder: 'e.g. 15% commission on every booking, charged to the landlord',
-    type: 'input',
-  },
-  {
-    name: 'competitors',
-    label: 'Who are your main competitors?',
-    hint: 'Who else is solving this problem, directly or indirectly?',
-    placeholder: 'e.g. Airbnb, Vrbo, local property management agencies',
-    type: 'input',
-  },
+  { name:'name',        label:'Startup Name',              hint:'What is your startup called?',                              placeholder:'e.g. Airbnb, Dropbox, Stripe',                 type:'input' },
+  { name:'idea',        label:'What does it do?',          hint:'Explain your startup and the problem it solves.',           placeholder:'e.g. We help landlords manage short-term rental properties without needing an agency…', type:'textarea', rows:4 },
+  { name:'market',      label:'Who is it for?',            hint:'Describe your target customer — be specific.',              placeholder:'e.g. First-time landlords in metro cities who own 1–3 properties',  type:'input' },
+  { name:'model',       label:'How do you make money?',    hint:'Describe your revenue model.',                             placeholder:'e.g. 15% commission on every booking',           type:'input' },
+  { name:'competitors', label:'Who are your competitors?', hint:'Who else is solving this problem, directly or indirectly?', placeholder:'e.g. Airbnb, Vrbo, local property management agencies', type:'input' },
+];
+const STAGES = [
+  { value:'Idea',       label:'Idea — I have a concept but no product yet' },
+  { value:'Validation', label:'Validation — I am talking to potential customers' },
+  { value:'Building',   label:'Building — I am actively developing the product' },
+  { value:'Live',       label:'Live — The product is launched and running' },
 ];
 
-const STAGE_OPTIONS = [
-  { value: 'Idea',       label: 'Idea — I have a concept but no product yet' },
-  { value: 'Validation', label: 'Validation — I am talking to potential customers' },
-  { value: 'Building',   label: 'Building — I am actively developing the product' },
-  { value: 'Live',       label: 'Live — The product is launched and running' },
-];
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 export default function SubmitPage() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '', idea: '', market: '', model: '', competitors: '', stage: 'Idea',
+  const { user }  = useAuth();
+  const [loading, setLoading]   = useState(false);
+  const [formData, setFormData] = useState({ name:'', idea:'', market:'', model:'', competitors:'', stage:'Idea' });
+  const [focused, setFocused]   = useState(null);
+
+  const handle = (e) => setFormData(p=>({...p,[e.target.name]:e.target.value}));
+
+  const submit = async (e) => {
+    e.preventDefault(); setLoading(true);
+    try {
+      const payload = { ...formData };
+      if (user) payload.user_id = user.id;
+      const result = await submitIdea(payload);
+      const hist = JSON.parse(localStorage.getItem('premortem_history')||'[]');
+      hist.unshift(result);
+      localStorage.setItem('premortem_history', JSON.stringify(hist));
+      navigate(`/report/${result.id}`,{ state:{ report:result } });
+    } catch(err) { console.error(err); setLoading(false); }
+  };
+
+  if (loading) return <LoadingScreen/>;
+
+  const inputStyle = (name) => ({
+    width:'100%', padding:'11px 14px',
+    background: focused===name ? 'var(--bg-overlay)' : 'var(--bg-elevated)',
+    border:`1px solid ${focused===name ? 'var(--accent)' : 'var(--bg-border-strong)'}`,
+    boxShadow: focused===name ? 'var(--accent-glow-sm)' : 'none',
+    borderRadius:10, color:'var(--text-primary)', fontFamily:'var(--font-body)',
+    fontSize:14, lineHeight:1.6, outline:'none', transition:'all 0.2s',
+    resize:'vertical',
   });
 
-  const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  // ── handleSubmit — untouched logic ──
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const result = await submitIdea(formData);
-      const history = JSON.parse(localStorage.getItem('premortem_history') || '[]');
-      history.unshift(result);
-      localStorage.setItem('premortem_history', JSON.stringify(history));
-      navigate(`/report/${result.id}`, { state: { report: result, isNew: true } });
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <LoadingScreen />;
-
-  const inputBase = {
-    backgroundColor: 'var(--bg-elevated)',
-    border: '1px solid var(--bg-border)',
-    color: 'var(--text-primary)',
-    fontFamily: 'var(--font-body)',
-    borderRadius: '8px',
-    fontSize: '0.9rem',
-    lineHeight: '1.6',
-    width: '100%',
-    padding: '10px 14px',
-    outline: 'none',
-    transition: 'border-color 0.15s',
-  };
-
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
-      <div className="max-w-5xl mx-auto px-5 md:px-10 py-12 pb-24">
+    <div style={{ minHeight:'100vh', paddingTop:64, background:'var(--bg-base)', color:'var(--text-primary)', fontFamily:'var(--font-body)' }}>
+      {/* ambient */}
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 70% 50% at 50% -10%,rgba(124,111,247,0.08) 0%,transparent 65%)' }}/>
 
-        {/* Page Header */}
-        <div className="mb-10">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-sm mb-6 transition-colors"
-            style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
-            Back
-          </Link>
+      <div className="pm-container" style={{ paddingTop:48, paddingBottom:96, position:'relative' }}>
 
-          <h1
-            className="font-bold mb-2"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1.2 }}
-          >
-            Analyze your startup
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.65 }}>
-            Fill in the details below. The more honest and specific you are, the more useful your report will be.
-          </p>
-        </div>
+        {/* Back link */}
+        <Link to="/" style={{ display:'inline-flex', alignItems:'center', gap:6, color:'var(--text-muted)', fontSize:12, textDecoration:'none', marginBottom:32, transition:'color 0.2s' }}
+          onMouseEnter={e=>e.currentTarget.style.color='var(--text-primary)'}
+          onMouseLeave={e=>e.currentTarget.style.color='var(--text-muted)'}
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+          Back to home
+        </Link>
 
-        {/* Layout: Form + Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="pm-label">Stress Test</div>
+        <h1 className="pm-h1" style={{ fontSize:'clamp(1.9rem,3.5vw,2.8rem)', marginBottom:12 }}>Analyze your startup</h1>
+        <p style={{ color:'var(--text-secondary)', fontSize:16, lineHeight:1.75, maxWidth:480, marginBottom:40 }}>
+          The more honest and specific you are, the sharper your report will be.
+        </p>
 
-          {/* ── Form (2/3) ── */}
-          <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6">
+        {/* 2-col layout */}
+        <div style={{ display:'grid', gridTemplateColumns:'minmax(0,2fr) minmax(0,1fr)', gap:28, alignItems:'start' }}>
 
-            {FIELDS.map((field) => (
-              <div key={field.name}>
-                <label
-                  htmlFor={field.name}
-                  className="block font-medium mb-1.5 text-sm"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  {field.label}
-                </label>
-                {field.hint && (
-                  <p className="text-xs mb-2" style={{ color: 'var(--text-muted)', lineHeight: 1.55 }}>{field.hint}</p>
-                )}
-                {field.type === 'textarea' ? (
-                  <textarea
-                    id={field.name}
-                    name={field.name}
-                    value={formData[field.name]}
-                    onChange={handleChange}
-                    required
-                    rows={field.rows}
-                    placeholder={field.placeholder}
-                    style={{ ...inputBase, resize: 'vertical' }}
-                    onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                    onBlur={e => e.target.style.borderColor = 'var(--bg-border)'}
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    id={field.name}
-                    name={field.name}
-                    value={formData[field.name]}
-                    onChange={handleChange}
-                    required
-                    placeholder={field.placeholder}
-                    style={inputBase}
-                    onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                    onBlur={e => e.target.style.borderColor = 'var(--bg-border)'}
-                  />
-                )}
-              </div>
-            ))}
-
-            {/* Stage */}
-            <div>
-              <label htmlFor="stage" className="block font-medium mb-1.5 text-sm" style={{ color: 'var(--text-primary)' }}>
-                What stage are you at?
-              </label>
-              <p className="text-xs mb-2" style={{ color: 'var(--text-muted)', lineHeight: 1.55 }}>
-                Be honest — this affects the type of risks we highlight.
-              </p>
-              <select
-                id="stage"
-                name="stage"
-                value={formData.stage}
-                onChange={handleChange}
-                required
-                style={{ ...inputBase, cursor: 'pointer' }}
-                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                onBlur={e => e.target.style.borderColor = 'var(--bg-border)'}
-              >
-                {STAGE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+          {/* Form */}
+          <form onSubmit={submit}>
+            <div className="pm-card" style={{ padding:28, marginBottom:16 }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:22 }}>
+                {FIELDS.map(f=>(
+                  <div key={f.name}>
+                    <label style={{ display:'block', fontWeight:600, fontSize:14, color:'var(--text-primary)', marginBottom:4 }}>{f.label}</label>
+                    {f.hint && <p style={{ color:'var(--text-muted)', fontSize:12, lineHeight:1.6, marginBottom:8 }}>{f.hint}</p>}
+                    {f.type==='textarea'
+                      ? <textarea name={f.name} value={formData[f.name]} onChange={handle} required rows={f.rows} placeholder={f.placeholder} style={inputStyle(f.name)} onFocus={()=>setFocused(f.name)} onBlur={()=>setFocused(null)}/>
+                      : <input type="text" name={f.name} value={formData[f.name]} onChange={handle} required placeholder={f.placeholder} style={inputStyle(f.name)} onFocus={()=>setFocused(f.name)} onBlur={()=>setFocused(null)}/>
+                    }
+                  </div>
                 ))}
-              </select>
+                <div>
+                  <label style={{ display:'block', fontWeight:600, fontSize:14, color:'var(--text-primary)', marginBottom:4 }}>What stage are you at?</label>
+                  <p style={{ color:'var(--text-muted)', fontSize:12, lineHeight:1.6, marginBottom:8 }}>Be honest — this affects the type of risks we highlight.</p>
+                  <select name="stage" value={formData.stage} onChange={handle} required style={{ ...inputStyle('stage'), cursor:'pointer' }} onFocus={()=>setFocused('stage')} onBlur={()=>setFocused(null)}>
+                    {STAGES.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+              </div>
             </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              id="analyze-btn"
-              className="w-full flex items-center justify-center gap-2 font-semibold text-sm text-white py-3.5 rounded-lg transition-all mt-2"
-              style={{ background: 'var(--accent-gradient)', boxShadow: 'var(--accent-glow)', border: '1px solid rgba(255,255,255,0.1)' }}
-              onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.1)'}
-              onMouseLeave={e => e.currentTarget.style.filter = 'brightness(1)'}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .28 2.716-1.262 2.716H4.06c-1.542 0-2.262-1.716-1.261-2.716L4 15.3" />
-              </svg>
+            <button type="submit" className="pm-btn-primary" style={{ width:'100%', justifyContent:'center', padding:'15px 28px', fontSize:15 }}>
+              <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .28 2.716-1.262 2.716H4.06c-1.542 0-2.262-1.716-1.261-2.716L4 15.3"/></svg>
               Analyze My Startup
             </button>
-
-            <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
-              Takes 20–40 seconds · Results are private to you
-            </p>
+            <p style={{ textAlign:'center', color:'var(--text-muted)', fontSize:12, marginTop:10 }}>Takes 20–40 seconds · Results stay private</p>
           </form>
 
-          {/* ── Sidebar (1/3) ── */}
-          <div className="space-y-5 lg:sticky lg:top-20">
-
-            {/* What our AI looks at */}
-            <div
-              className="rounded-xl border p-5"
-              style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}
-            >
-              <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>
-                What the analysis covers
-              </h3>
-              <ul className="space-y-3">
-                {[
-                  'Is your market large enough to build a real business?',
-                  'Can competitors copy or kill you quickly?',
-                  'Will real customers actually pay for this?',
-                  'Are there legal or regulatory risks hiding in your model?',
-                  'Can the product be built and does it scale?',
-                  'Is the timing right, or is the market not ready?',
-                  'Will you run out of money before finding traction?',
-                ].map((point, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-xs" style={{ color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                    <svg className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {point}
+          {/* Sidebar */}
+          <div style={{ display:'flex', flexDirection:'column', gap:16, position:'sticky', top:80 }}>
+            {/* Coverage */}
+            <div className="pm-card" style={{ padding:22 }}>
+              <p style={{ fontWeight:600, fontSize:14, color:'var(--text-primary)', fontFamily:'var(--font-display)', marginBottom:16 }}>What the analysis covers</p>
+              <ul style={{ listStyle:'none', padding:0, margin:0, display:'flex', flexDirection:'column', gap:10 }}>
+                {['Is your market large enough?','Can competitors copy or kill you?','Will customers actually pay?','Are there legal landmines?','Can the product be built & scaled?','Is the macro timing right?','Will you run out of money first?'].map((pt,i)=>(
+                  <li key={i} style={{ display:'flex', alignItems:'flex-start', gap:10, color:'var(--text-secondary)', fontSize:12, lineHeight:1.65 }}>
+                    <svg width="15" height="15" fill="none" stroke="var(--accent-bright)" strokeWidth="2" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {pt}
                   </li>
                 ))}
               </ul>
             </div>
-
             {/* Tip */}
-            <div
-              className="rounded-xl border p-5"
-              style={{ backgroundColor: 'var(--accent-dim)', borderColor: 'var(--accent-border)' }}
-            >
-              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--accent)' }}>💡 Tip for better results</p>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                Describe your idea as if you're explaining it to a smart friend who has never heard of it. Avoid buzzwords like "disruptive" or "revolutionary" — specific details give a better analysis.
+            <div style={{ background:'var(--accent-dim)', border:'1px solid var(--accent-border)', borderRadius:16, padding:20 }}>
+              <p style={{ fontWeight:700, fontSize:12, color:'var(--accent-bright)', marginBottom:8 }}>💡 Tip for better results</p>
+              <p style={{ color:'var(--text-secondary)', fontSize:12, lineHeight:1.75 }}>
+                Describe your idea as if you're explaining it to a smart friend who has never heard of it. Specific details produce sharper analysis.
               </p>
             </div>
           </div>

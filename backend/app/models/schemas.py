@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class StartupSubmission(BaseModel):
     name: str
@@ -7,3 +8,4 @@ class StartupSubmission(BaseModel):
     model: str
     competitors: str
     stage: str
+    user_id: Optional[str] = None
