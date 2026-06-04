@@ -4,15 +4,23 @@ import { submitIdea } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const STEPS = [
-  { label:'Reading your submission…',                  duration:2000 },
-  { label:'Reviewing market & competition…',            duration:3500 },
-  { label:'Investor: checking scale & fundability…',    duration:4500 },
-  { label:'Customer: evaluating value & pricing…',      duration:4000 },
-  { label:'Engineer: assessing technical risk…',        duration:3500 },
-  { label:'Finance: modelling runway & burn…',          duration:3500 },
-  { label:'Founder\'s Mirror: challenging the team…',   duration:4000 },
-  { label:'Cross-referencing real failure cases…',      duration:3500 },
-  { label:'Compiling your failure report…',             duration:2500 },
+  { label:'Reading your submission…',                        duration:2000, phase:'prep',  icon:'📋' },
+  { label:'Scoring 10 startup dimensions…',                  duration:3000, phase:'prep',  icon:'📐' },
+  { label:'Investor — scale & fundability…',                 duration:3500, phase:'bear',  icon:'💼' },
+  { label:'Competitor — replication risk…',                  duration:3000, phase:'bear',  icon:'🏁' },
+  { label:'Customer — value & willingness to pay…',          duration:3500, phase:'bear',  icon:'🙋' },
+  { label:'Regulator — legal & compliance risk…',            duration:3000, phase:'bear',  icon:'⚖️' },
+  { label:'Engineer — technical & build risk…',              duration:3000, phase:'bear',  icon:'🔧' },
+  { label:'Economist — macro & timing risk…',                duration:3000, phase:'bear',  icon:'📊' },
+  { label:'Finance — runway & burn rate…',                   duration:3000, phase:'bear',  icon:'🧾' },
+  { label:'Founder Mirror — team critique…',                 duration:3500, phase:'bear',  icon:'🪞' },
+  { label:'Opportunity analyst — why this wins…',           duration:3000, phase:'bull',  icon:'🚀' },
+  { label:'Early adopter lens — first customers…',          duration:3000, phase:'bull',  icon:'⭐' },
+  { label:'Market optimist — tailwinds & timing…',          duration:3000, phase:'bull',  icon:'📈' },
+  { label:'Growth operator — distribution channels…',       duration:3000, phase:'bull',  icon:'⚡' },
+  { label:'Benchmarking against real companies…',            duration:2500, phase:'synth', icon:'🔍' },
+  { label:'Building your action plan…',                      duration:2000, phase:'synth', icon:'🎯' },
+  { label:'Compiling intelligence report…',                  duration:2000, phase:'synth', icon:'📊' },
 ];
 
 function LoadingScreen() {
@@ -31,57 +39,104 @@ function LoadingScreen() {
     return ()=>clearInterval(iv);
   },[]);
 
+  const phaseColor = { prep:'#64748b', bear:'#f43f5e', bull:'#22c55e', synth:'#fbbf24' };
+  const currentPhase = STEPS[step]?.phase || 'prep';
+  const bearsDone  = STEPS.filter((s,i) => i < step && s.phase === 'bear').length;
+  const bullsDone  = STEPS.filter((s,i) => i < step && s.phase === 'bull').length;
+  const totalBears = STEPS.filter(s => s.phase === 'bear').length;
+  const totalBulls = STEPS.filter(s => s.phase === 'bull').length;
+
   return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:24, background:'var(--bg-base)', fontFamily:'var(--font-body)' }}>
-      <div style={{ width:'100%', maxWidth:440 }}>
+    <div style={{ minHeight:'100vh', paddingTop:80, paddingBottom:48, display:'flex', alignItems:'center', justifyContent:'center', padding:'80px 24px 48px', background:'#000', fontFamily:'Inter, sans-serif' }}>
+      <div style={{ width:'100%', maxWidth:480 }}>
         {/* Icon */}
-        <div style={{ display:'flex', justifyContent:'center', marginBottom:32 }}>
-          <div style={{ width:64, height:64, borderRadius:18, background:'var(--accent-dim)', border:'1px solid var(--accent-border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <svg width="30" height="30" fill="none" stroke="var(--accent-bright)" strokeWidth="1.75" viewBox="0 0 24 24">
+        <div style={{ display:'flex', justifyContent:'center', marginBottom:28 }}>
+          <div style={{ width:60, height:60, borderRadius:18, background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 24px rgba(220,38,38,0.2)' }}>
+            <svg width="28" height="28" fill="none" stroke="#dc2626" strokeWidth="1.75" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .28 2.716-1.262 2.716H4.06c-1.542 0-2.262-1.716-1.261-2.716L4 15.3"/>
             </svg>
           </div>
         </div>
 
-        <h2 style={{ textAlign:'center', fontFamily:'var(--font-display)', fontWeight:700, fontSize:22, color:'var(--text-primary)', marginBottom:6, letterSpacing:'-0.02em' }}>Analyzing your startup</h2>
-        <p style={{ textAlign:'center', color:'var(--text-secondary)', fontSize:14, marginBottom:32 }}>8 adversarial perspectives reviewing your idea</p>
+        <h2 style={{ textAlign:'center', fontFamily:'Space Grotesk, sans-serif', fontWeight:800, fontSize:22, color:'#fff', marginBottom:6, letterSpacing:'-0.03em' }}>Analyzing your startup</h2>
+        <p style={{ textAlign:'center', color:'rgba(255,255,255,0.45)', fontSize:13, marginBottom:28 }}>Hold tight — our agents are working hard to stress-test every angle of your idea</p>
 
         {/* Progress bar */}
-        <div style={{ marginBottom:24 }}>
+        <div style={{ marginBottom:20 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-            <span style={{ color:'var(--text-secondary)', fontSize:12 }}>{STEPS[step]?.label}</span>
-            <span style={{ color:'var(--accent-bright)', fontSize:12, fontWeight:700 }}>{pct}%</span>
+            <span style={{ color:'rgba(255,255,255,0.5)', fontSize:12 }}>{STEPS[step]?.label}</span>
+            <span style={{ color: phaseColor[currentPhase] || '#dc2626', fontSize:12, fontWeight:700 }}>{pct}%</span>
           </div>
-          <div className="pm-progress-track">
-            <div className="pm-progress-fill" style={{ width:`${pct}%` }}/>
+          <div style={{ height:4, borderRadius:999, background:'rgba(255,255,255,0.07)', overflow:'hidden' }}>
+            <div style={{
+              height:'100%', borderRadius:999, transition:'width 0.3s ease',
+              width:`${pct}%`,
+              background: currentPhase==='bull'
+                ? 'linear-gradient(90deg, #16a34a, #22c55e)'
+                : currentPhase==='synth'
+                ? 'linear-gradient(90deg, #d97706, #fbbf24)'
+                : 'linear-gradient(90deg, #b91c1c, #dc2626)',
+              boxShadow: currentPhase==='bull'
+                ? '0 0 12px rgba(34,197,94,0.5)'
+                : currentPhase==='synth'
+                ? '0 0 12px rgba(251,191,36,0.5)'
+                : '0 0 12px rgba(220,38,38,0.5)',
+            }}/>
           </div>
         </div>
 
-        {/* Step list */}
-        <div style={{ background:'var(--bg-surface)', border:'1px solid var(--bg-border)', borderRadius:16, padding:20, display:'flex', flexDirection:'column', gap:12 }}>
-          {STEPS.map((s,i) => {
-            const done=i<step, active=i===step;
-            return (
-              <div key={i} style={{ display:'flex', alignItems:'center', gap:12 }}>
-                {done ? (
-                  <div style={{ width:20, height:20, borderRadius:'50%', background:'rgba(46,204,113,0.15)', border:'1px solid rgba(46,204,113,0.35)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <svg width="10" height="10" fill="none" stroke="var(--success)" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+        {/* Step list — windowed: show 5 steps centred on current */}
+        {(() => {
+          const WINDOW = 5;
+          const half   = Math.floor(WINDOW / 2);
+          let start    = Math.max(0, step - half);
+          let end      = start + WINDOW;
+          if (end > STEPS.length) { end = STEPS.length; start = Math.max(0, end - WINDOW); }
+          const visible = STEPS.slice(start, end);
+
+          return (
+            <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:16, padding:18, display:'flex', flexDirection:'column', gap:9 }}>
+              {/* top fade hint */}
+              {start > 0 && (
+                <p style={{ textAlign:'center', fontSize:10, color:'rgba(255,255,255,0.2)', margin:'-4px 0 4px', letterSpacing:'0.06em' }}>
+                  ··· {start} step{start>1?'s':''} completed
+                </p>
+              )}
+
+              {visible.map((s, vi) => {
+                const i    = start + vi;
+                const done = i < step, active = i === step;
+                const pc   = phaseColor[s.phase] || '#64748b';
+                return (
+                  <div key={i} style={{ display:'flex', alignItems:'center', gap:10, opacity: done?0.6:1, transition:'opacity 0.3s' }}>
+                    {done ? (
+                      <div style={{ width:20, height:20, borderRadius:'50%', background:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.35)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                        <svg width="10" height="10" fill="none" stroke="#22c55e" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                      </div>
+                    ) : active ? (
+                      <div style={{ width:20, height:20, borderRadius:'50%', background:`${pc}18`, border:`1px solid ${pc}55`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                        <div style={{ width:7, height:7, borderRadius:'50%', background:pc, animation:'blink 1.5s infinite' }}/>
+                      </div>
+                    ) : (
+                      <div style={{ width:20, height:20, borderRadius:'50%', border:'1px solid rgba(255,255,255,0.1)', flexShrink:0 }}/>
+                    )}
+                    <span style={{ fontSize:12, fontWeight:active?600:400, transition:'color 0.3s', color: done?'rgba(34,197,94,0.8)':active?'#fff':'rgba(255,255,255,0.25)' }}>
+                      {s.label}
+                    </span>
                   </div>
-                ) : active ? (
-                  <div style={{ width:20, height:20, borderRadius:'50%', background:'var(--accent-dim)', border:'1px solid var(--accent-border)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                    <div style={{ width:7, height:7, borderRadius:'50%', background:'var(--accent)', animation:'blink 1.5s infinite' }}/>
-                  </div>
-                ) : (
-                  <div style={{ width:20, height:20, borderRadius:'50%', border:'1px solid var(--bg-border-strong)', flexShrink:0 }}/>
-                )}
-                <span style={{ fontSize:12, color: done?'var(--success)':active?'var(--text-primary)':'var(--text-muted)', fontWeight:active?500:400, transition:'color 0.3s' }}>
-                  {s.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        <p style={{ textAlign:'center', color:'var(--text-muted)', fontSize:12, marginTop:16 }}>Usually takes 20–40 seconds</p>
+                );
+              })}
+
+              {/* bottom remaining hint */}
+              {end < STEPS.length && (
+                <p style={{ textAlign:'center', fontSize:10, color:'rgba(255,255,255,0.2)', margin:'4px 0 -4px', letterSpacing:'0.06em' }}>
+                  ··· {STEPS.length - end} more step{STEPS.length-end>1?'s':''} remaining
+                </p>
+              )}
+            </div>
+          );
+        })()}
+        <p style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:12, marginTop:16 }}>Usually takes 30–60 seconds</p>
       </div>
     </div>
   );

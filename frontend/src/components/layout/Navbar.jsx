@@ -45,15 +45,15 @@ export default function Navbar() {
     display: 'inline-flex', alignItems: 'center',
   };
 
-  const linkActive = { color: 'var(--text-primary)', background: 'rgba(79,114,255,0.12)', border: '1px solid rgba(79,114,255,0.2)' };
+  const linkActive = { color: '#ffffff', background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.35)' };
   const linkIdle   = { color: 'var(--text-secondary)', background: 'transparent' };
 
   return (
     <nav
       className="pm-nav"
       style={{
-        background: scrolled ? 'rgba(3,6,15,0.92)' : 'rgba(3,6,15,0.5)',
-        borderBottom: scrolled ? '1px solid rgba(79,114,255,0.12)' : '1px solid transparent',
+        background: scrolled ? 'rgba(0,0,0,0.95)' : 'rgba(0,0,0,0.6)',
+        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
         backdropFilter: 'blur(28px)',
       }}
     >
@@ -61,12 +61,12 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link to="/" style={{ display:'flex', alignItems:'center', gap:10, flexShrink:0, textDecoration:'none' }}>
-          <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink:0, filter:'drop-shadow(0 0 10px rgba(79,114,255,0.4))' }}>
+          <svg width="36" height="36" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink:0, filter:'drop-shadow(0 0 10px rgba(220,38,38,0.5))' }}>
             <defs>
               <linearGradient id="navG1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#4f72ff"/>
-                <stop offset="55%" stopColor="#8b5cf6"/>
-                <stop offset="100%" stopColor="#c084fc"/>
+                <stop offset="0%" stopColor="#b91c1c"/>
+                <stop offset="55%" stopColor="#dc2626"/>
+                <stop offset="100%" stopColor="#ef4444"/>
               </linearGradient>
             </defs>
             <rect width="64" height="64" rx="16" fill="url(#navG1)"/>
@@ -89,7 +89,7 @@ export default function Navbar() {
               return (
                 <button key={label} onClick={onClick}
                   style={{ ...linkBase, ...linkIdle }}
-                  onMouseEnter={e => { e.currentTarget.style.color='var(--text-primary)'; e.currentTarget.style.background='rgba(79,114,255,0.08)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.color='#ffffff'; e.currentTarget.style.background='rgba(255,255,255,0.05)'; }}
                   onMouseLeave={e => { e.currentTarget.style.color='var(--text-secondary)'; e.currentTarget.style.background='transparent'; }}
                 >
                   {label}
@@ -99,7 +99,7 @@ export default function Navbar() {
             return (
               <Link key={to} to={to}
                 style={{ ...linkBase, ...(active ? linkActive : linkIdle) }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.color='var(--text-primary)'; e.currentTarget.style.background='rgba(79,114,255,0.08)'; }}}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.color='#ffffff'; e.currentTarget.style.background='rgba(255,255,255,0.05)'; }}}
                 onMouseLeave={e => { if (!active) { e.currentTarget.style.color='var(--text-secondary)'; e.currentTarget.style.background='transparent'; }}}
               >
                 {label}
@@ -114,7 +114,7 @@ export default function Navbar() {
             <div style={{ display:'flex', alignItems:'center', gap:10 }}>
               {user.user_metadata?.avatar_url ? (
                 <img src={user.user_metadata.avatar_url} alt="avatar"
-                  style={{ width:32, height:32, borderRadius:'50%', flexShrink:0, border:'2px solid rgba(79,114,255,0.4)' }}
+                  style={{ width:32, height:32, borderRadius:'50%', flexShrink:0, border:'2px solid rgba(220,38,38,0.5)' }}
                 />
               ) : (
                 <div style={{ width:32, height:32, borderRadius:'50%', flexShrink:0, background:'var(--accent-gradient)', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:13, fontWeight:700 }}>
@@ -132,9 +132,9 @@ export default function Navbar() {
             </div>
           ) : !loading ? (
             <button onClick={() => signInWithGoogle()}
-              style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 16px', borderRadius:10, border:'1px solid var(--bg-border-strong)', background:'rgba(79,114,255,0.06)', color:'var(--text-primary)', fontSize:13, fontWeight:500, cursor:'pointer', transition:'all 0.2s', fontFamily:'var(--font-body)' }}
-              onMouseEnter={e => { e.currentTarget.style.background='rgba(79,114,255,0.12)'; e.currentTarget.style.borderColor='var(--accent-border)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background='rgba(79,114,255,0.06)'; e.currentTarget.style.borderColor='var(--bg-border-strong)'; }}
+              style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 16px', borderRadius:10, border:'1px solid var(--bg-border-strong)', background:'rgba(255,255,255,0.04)', color:'var(--text-primary)', fontSize:13, fontWeight:500, cursor:'pointer', transition:'all 0.2s', fontFamily:'var(--font-body)' }}
+              onMouseEnter={e => { e.currentTarget.style.background='rgba(220,38,38,0.08)'; e.currentTarget.style.borderColor='var(--accent-border)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor='var(--bg-border-strong)'; }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

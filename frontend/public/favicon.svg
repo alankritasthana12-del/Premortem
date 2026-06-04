@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
     <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4f72ff"/>
-      <stop offset="55%" stop-color="#8b5cf6"/>
-      <stop offset="100%" stop-color="#c084fc"/>
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="55%" stop-color="#b91c1c"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
     </linearGradient>
     <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#4f72ff" stop-opacity="0.6"/>
+      <stop offset="0%" stop-color="#f87171" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#dc2626" stop-opacity="0.6"/>
     </linearGradient>
   </defs>
 
@@ -15,13 +15,12 @@
   <rect width="64" height="64" rx="16" fill="url(#g1)"/>
 
   <!-- Subtle inner glow overlay -->
-  <rect width="64" height="64" rx="16" fill="white" fill-opacity="0.04"/>
+  <rect width="64" height="64" rx="16" fill="white" fill-opacity="0.05"/>
 
-  <!-- Main icon: stylized warning/insight triangle with a scan line -->
-  <!-- Outer triangle shape -->
+  <!-- Main icon: warning triangle -->
   <path d="M32 10 L54 48 H10 Z" fill="none" stroke="white" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>
 
-  <!-- Inner triangle (smaller, for depth) -->
+  <!-- Inner triangle (depth) -->
   <path d="M32 20 L46 44 H18 Z" fill="white" fill-opacity="0.08"/>
 
   <!-- Exclamation mark stem -->
@@ -30,7 +29,8 @@
   <!-- Exclamation dot -->
   <circle cx="32" cy="42" r="2" fill="white"/>
 
-  <!-- Cyan accent lines (scan lines left-right) -->
+  <!-- Red accent scan lines -->
   <line x1="8" y1="52" x2="24" y2="52" stroke="url(#g2)" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
   <line x1="40" y1="52" x2="56" y2="52" stroke="url(#g2)" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+
 </svg>

@@ -8,6 +8,13 @@ const getRisk = (score) => {
   if (score>40) return { label:'Medium Risk',  color:'#fbbf24', bg:'rgba(251,191,36,0.1)',  border:'rgba(251,191,36,0.25)' };
   return            { label:'Lower Risk',   color:'#34d399', bg:'rgba(52,211,153,0.1)', border:'rgba(52,211,153,0.25)' };
 };
+const TIER_COLOR = { A:'#22c55e', B:'#86efac', C:'#fbbf24', D:'#fb923c', F:'#f43f5e' };
+const getTier = (report) => {
+  if (report.startupTier) return report.startupTier;
+  const s = report.successProbability;
+  if (!s) return null;
+  return s>=40?'A':s>=25?'B':s>=12?'C':s>=5?'D':'F';
+};
 
 export default function DashboardPage() {
   const [history,  setHistory]  = useState([]);
@@ -44,7 +51,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight:'100vh', paddingTop:64, background:'var(--bg-base)', color:'var(--text-primary)', fontFamily:'var(--font-body)' }}>
-      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 70% 40% at 50% -5%,rgba(124,111,247,0.07) 0%,transparent 65%)' }}/>
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 70% 40% at 50% -5%,rgba(220,38,38,0.07) 0%,transparent 65%)' }}/>
 
       <div className="pm-container" style={{ paddingTop:48, paddingBottom:96, position:'relative' }}>
 
@@ -136,11 +143,25 @@ export default function DashboardPage() {
                     onMouseEnter={e=>e.target.style.opacity=1}
                   />
 
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18 }}>
-                    <span style={{ fontSize:11, fontWeight:700, padding:'4px 12px', borderRadius:999, color:risk.color, background:risk.bg, border:`1px solid ${risk.border}`, letterSpacing:'0.06em', textTransform:'uppercase' }}>{risk.label}</span>
-                    <div style={{ display:'flex', alignItems:'flex-end', gap:2 }}>
-                      <span style={{ fontFamily:'var(--font-display)', fontWeight:900, fontSize:26, color:risk.color, letterSpacing:'-0.04em', lineHeight:1 }}>{report.overallRisk||0}</span>
-                      <span style={{ fontSize:12, color:'var(--text-muted)', marginBottom:2 }}>/100</span>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span style={{ fontSize:11, fontWeight:700, padding:'4px 12px', borderRadius:999, color:risk.color, background:risk.bg, border:`1px solid ${risk.border}`, letterSpacing:'0.06em', textTransform:'uppercase' }}>{risk.label}</span>
+                      {/* Tier badge */}
+                      {getTier(report) && (
+                        <span style={{ fontSize:11, fontWeight:800, padding:'3px 9px', borderRadius:8, color:TIER_COLOR[getTier(report)]||'#64748b', background:`${TIER_COLOR[getTier(report)]||'#64748b'}18`, border:`1px solid ${TIER_COLOR[getTier(report)]||'#64748b'}40`, letterSpacing:'0.05em' }}>Tier {getTier(report)}</span>
+                      )}
+                    </div>
+                    <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                      {report.successProbability != null && (
+                        <div style={{ textAlign:'right' }}>
+                          <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'rgba(255,255,255,0.3)', marginBottom:1 }}>Success</div>
+                          <div style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:900, fontSize:17, color:'#22c55e', letterSpacing:'-0.03em', lineHeight:1 }}>{report.successProbability}%</div>
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'rgba(255,255,255,0.3)', marginBottom:1 }}>Risk</div>
+                        <div style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:900, fontSize:17, color:risk.color, letterSpacing:'-0.03em', lineHeight:1 }}>{report.overallRisk||0}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -151,12 +172,12 @@ export default function DashboardPage() {
                     {report.startup?.idea||report.startup?.market||'—'}
                   </p>
 
-                  {/* Mini risk bars */}
+                  {/* Mini risk bars — bears only */}
                   {report.personas && (
                     <div style={{ display:'flex', gap:3, height:5, marginBottom:16 }}>
-                      {report.personas.slice(0,7).map((p,pi)=>{
+                      {report.personas.filter(p=>p.stance==='bear'||!p.stance).slice(0,8).map((p,pi)=>{
                         const sev=p.risks?.reduce((a,r)=>Math.max(a,rankMap[r.severity?.toUpperCase()]||1),0)||1;
-                        const c=sev===4?'#f43f5e':sev===3?'#fb923c':sev===2?'#fbbf24':'rgba(79,114,255,0.15)';
+                        const c=sev===4?'#f43f5e':sev===3?'#fb923c':sev===2?'#fbbf24':'rgba(255,255,255,0.1)';
                         return <div key={pi} style={{ flex:1, borderRadius:999, background:c, boxShadow:sev>2?`0 0 6px ${c}80`:'' }}/>;
                       })}
                     </div>

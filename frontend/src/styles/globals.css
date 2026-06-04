@@ -1,45 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ─── COLOR SYSTEM: Deep Ocean + Electric Sapphire ──────────────────── */
+/* ─── COLOR SYSTEM: Pure Black + Racing Red + White ─────────────────── */
 :root {
-  /* Backgrounds */
-  --bg-base:          #03060f;   /* Deep midnight navy */
-  --bg-surface:       #060b1a;   /* Card surface */
-  --bg-elevated:      #0b1228;   /* Elevated elements */
-  --bg-overlay:       #101933;   /* Modals / inputs focused */
-  --bg-border:        rgba(99,130,255,0.1);
-  --bg-border-strong: rgba(99,130,255,0.18);
+  /* Backgrounds — pure black like the reference */
+  --bg-base:          #000000;
+  --bg-surface:       #0b0b0b;
+  --bg-elevated:      #141414;
+  --bg-overlay:       #1c1c1c;
+  --bg-border:        rgba(255,255,255,0.07);
+  --bg-border-strong: rgba(255,255,255,0.13);
 
   /* Text */
-  --text-primary:   #eef0ff;
-  --text-secondary: #7b8bb8;
-  --text-muted:     #3d4d72;
+  --text-primary:   #ffffff;
+  --text-secondary: #888888;
+  --text-muted:     #444444;
 
-  /* Primary Accent: Electric Sapphire → Violet */
-  --accent:           #4f72ff;
-  --accent-bright:    #8ea4ff;
-  --accent-hover:     #3d5fe0;
-  --accent-dim:       rgba(79,114,255,0.1);
-  --accent-border:    rgba(79,114,255,0.35);
-  --accent-glow:      0 0 48px rgba(79,114,255,0.45);
-  --accent-glow-sm:   0 0 22px rgba(79,114,255,0.28);
-  --accent-gradient:  linear-gradient(135deg, #4f72ff 0%, #8b5cf6 55%, #c084fc 100%);
+  /* Primary: Racing Red */
+  --accent:           #dc2626;
+  --accent-bright:    #f87171;
+  --accent-hover:     #b91c1c;
+  --accent-dim:       rgba(220,38,38,0.1);
+  --accent-border:    rgba(220,38,38,0.4);
+  --accent-glow:      0 0 50px rgba(220,38,38,0.45);
+  --accent-glow-sm:   0 0 24px rgba(220,38,38,0.28);
+  --accent-gradient:  linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #ef4444 100%);
 
-  /* Secondary: Electric Cyan (for highlights, links) */
-  --cyan:             #38bdf8;
-  --cyan-dim:         rgba(56,189,248,0.1);
-  --cyan-glow:        0 0 24px rgba(56,189,248,0.3);
+  /* White as secondary highlight */
+  --cyan:             #ffffff;
+  --cyan-dim:         rgba(255,255,255,0.06);
 
-  /* Risk Colors */
-  --risk-critical: #f43f5e;
-  --risk-high:     #fb923c;
-  --risk-medium:   #fbbf24;
-  --risk-low:      #64748b;
-  --success:       #34d399;
+  /* Risk severity — kept distinct */
+  --risk-critical: #ef4444;
+  --risk-high:     #f97316;
+  --risk-medium:   #eab308;
+  --risk-low:      #6b7280;
+  --success:       #22c55e;
 
   /* Shadows */
-  --shadow-card: 0 4px 32px rgba(0,0,10,0.7), 0 1px 0 rgba(99,130,255,0.06) inset;
-  --shadow-glow: 0 0 64px rgba(79,114,255,0.2), 0 4px 32px rgba(0,0,10,0.7);
+  --shadow-card: 0 2px 24px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow-glow: 0 0 60px rgba(220,38,38,0.2), 0 4px 32px rgba(0,0,0,0.9);
 
   /* Typography */
   --font-display: 'Space Grotesk', -apple-system, sans-serif;
@@ -49,30 +48,30 @@
 
 /* ─── Base Reset ─────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
-
-html { scroll-behavior: smooth; background-color: var(--bg-base); }
+html { scroll-behavior: smooth; background-color: #000000; }
 
 body {
-  background-color: var(--bg-base) !important;
-  color: var(--text-primary) !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
   font-family: var(--font-body) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0; padding: 0; min-height: 100vh;
 }
 
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--bg-base); }
-::-webkit-scrollbar-thumb { background: rgba(79,114,255,0.3); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(79,114,255,0.5); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: rgba(220,38,38,0.4); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(220,38,38,0.7); }
 
-::selection { background: rgba(79,114,255,0.35); color: #fff; }
+::selection { background: rgba(220,38,38,0.4); color: #fff; }
 
 select option { background-color: var(--bg-overlay); color: var(--text-primary); }
 input, textarea, select, button { font-family: var(--font-body); }
 a { text-decoration: none; color: inherit; }
 
-/* ─── Background Design — Global Ambient ────────────────────────────── */
+/* ─── Global Background Design ──────────────────────────────────────── */
+/* Subtle red glow from top — like a racing stripe */
 body::before {
   content: '';
   position: fixed;
@@ -80,32 +79,31 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse 70% 55% at 15% 5%,  rgba(79,114,255,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 85% 8%,  rgba(139,92,246,0.14) 0%, transparent 60%),
-    radial-gradient(ellipse 45% 40% at 50% 95%, rgba(56,189,248,0.1)  0%, transparent 60%),
-    radial-gradient(ellipse 40% 35% at 90% 60%, rgba(192,132,252,0.08) 0%, transparent 55%);
+    radial-gradient(ellipse 80% 35% at 50% -5%,  rgba(220,38,38,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 25% at 5%  20%,  rgba(185,28,28,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 25% at 95% 20%,  rgba(185,28,28,0.08) 0%, transparent 60%);
 }
 
-/* Dot grid overlay */
+/* Subtle dot grid — very faint on black */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: radial-gradient(rgba(99,130,255,0.22) 1px, transparent 1px);
-  background-size: 30px 30px;
-  mask-image: radial-gradient(ellipse 120% 120% at 50% 20%, black 10%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 120% 120% at 50% 20%, black 10%, transparent 75%);
-  opacity: 0.65;
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(ellipse 100% 60% at 50% 0%, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 100% 60% at 50% 0%, black 0%, transparent 70%);
+  opacity: 0.5;
 }
 
 /* ─── Layout Primitives ─────────────────────────────────────────────── */
 .pm-page {
   min-height: 100vh;
   padding-top: 64px;
-  background-color: var(--bg-base);
-  color: var(--text-primary);
+  background-color: #000;
+  color: #fff;
   font-family: var(--font-body);
   position: relative;
   z-index: 1;
@@ -135,35 +133,35 @@ body::after {
 
 /* ─── Cards ─────────────────────────────────────────────────────────── */
 .pm-card {
-  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(99,130,255,0.03) 100%);
+  background: var(--bg-surface);
   border: 1px solid var(--bg-border);
-  border-radius: 18px;
+  border-radius: 14px;
   box-shadow: var(--shadow-card);
-  backdrop-filter: blur(4px);
   position: relative;
   z-index: 1;
 }
 
 .pm-card-hover {
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
   cursor: pointer;
 }
 .pm-card-hover:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-glow);
-  border-color: var(--accent-border);
+  border-color: rgba(220,38,38,0.3);
 }
 
 /* ─── Buttons ───────────────────────────────────────────────────────── */
 .pm-btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 28px; border-radius: 12px; border: none;
+  padding: 12px 28px; border-radius: 10px; border: none;
   background: var(--accent-gradient);
   box-shadow: var(--accent-glow-sm);
   color: #fff; font-weight: 700; font-size: 14px;
   cursor: pointer; font-family: var(--font-body); text-decoration: none;
   transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   position: relative; z-index: 1;
+  letter-spacing: 0.01em;
 }
 .pm-btn-primary:hover {
   filter: brightness(1.12); transform: translateY(-1px); box-shadow: var(--accent-glow);
@@ -171,43 +169,34 @@ body::after {
 
 .pm-btn-ghost {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 24px; border-radius: 12px;
+  padding: 11px 24px; border-radius: 10px;
   border: 1px solid var(--bg-border-strong);
-  background: rgba(99,130,255,0.05);
+  background: rgba(255,255,255,0.04);
   color: var(--text-secondary); font-weight: 500; font-size: 14px;
   cursor: pointer; transition: all 0.2s ease; font-family: var(--font-body); text-decoration: none;
 }
 .pm-btn-ghost:hover {
-  background: rgba(99,130,255,0.1); border-color: var(--accent-border); color: var(--text-primary);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.25);
+  color: #fff;
 }
 
 /* ─── Label ─────────────────────────────────────────────────────────── */
 .pm-label {
   display: inline-flex; align-items: center; gap: 8px;
-  color: var(--cyan); font-size: 10px; font-weight: 700;
+  color: var(--accent-bright); font-size: 10px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px;
 }
 .pm-label::before {
-  content: ''; display: block; width: 24px; height: 1.5px;
-  background: linear-gradient(90deg, var(--cyan), transparent);
+  content: ''; display: block; width: 20px; height: 2px;
+  background: var(--accent-gradient);
+  border-radius: 999px;
 }
 
 /* ─── Typography ────────────────────────────────────────────────────── */
-.pm-h1 {
-  font-family: var(--font-display); font-weight: 900;
-  letter-spacing: -0.04em; line-height: 1.05;
-  color: var(--text-primary); margin: 0;
-}
-.pm-h2 {
-  font-family: var(--font-display); font-weight: 700;
-  letter-spacing: -0.03em; line-height: 1.15;
-  color: var(--text-primary); margin: 0;
-}
-.pm-h3 {
-  font-family: var(--font-display); font-weight: 600;
-  letter-spacing: -0.02em; line-height: 1.25;
-  color: var(--text-primary); margin: 0;
-}
+.pm-h1 { font-family: var(--font-display); font-weight: 900; letter-spacing: -0.04em; line-height: 1.05; color: #fff; margin: 0; }
+.pm-h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; color: #fff; margin: 0; }
+.pm-h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; color: #fff; margin: 0; }
 
 /* ─── Gradient text ─────────────────────────────────────────────────── */
 .pm-gradient-text {
@@ -215,10 +204,10 @@ body::after {
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
-/* ─── Section Dividers ──────────────────────────────────────────────── */
+/* ─── Dividers ──────────────────────────────────────────────────────── */
 .pm-section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent-border), transparent);
+  background: linear-gradient(90deg, transparent, rgba(220,38,38,0.3), transparent);
 }
 
 /* ─── Progress bar ──────────────────────────────────────────────────── */
@@ -226,10 +215,10 @@ body::after {
 .pm-progress-fill  { height: 100%; border-radius: 999px; background: var(--accent-gradient); box-shadow: var(--accent-glow-sm); transition: width 0.15s ease-out; }
 
 /* ─── Risk bar ──────────────────────────────────────────────────────── */
-.pm-riskbar-track { flex: 1; height: 6px; border-radius: 999px; background: rgba(99,130,255,0.07); overflow: hidden; }
+.pm-riskbar-track { flex: 1; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
 .pm-riskbar-fill  { height: 100%; border-radius: 999px; transition: width 1s ease; }
 
-/* ─── Masonry ───────────────────────────────────────────────────────── */
+/* ─── Masonry (unused but kept) ─────────────────────────────────────── */
 .pm-columns-2 { column-count: 2; column-gap: 20px; }
 @media (max-width: 768px) { .pm-columns-2 { column-count: 1; } }
 .pm-col-item { break-inside: avoid; margin-bottom: 20px; }
@@ -250,35 +239,22 @@ body::after {
   width: 100%; padding: 11px 14px;
   background: var(--bg-elevated);
   border: 1px solid var(--bg-border-strong);
-  border-radius: 10px; color: var(--text-primary);
+  border-radius: 10px; color: #fff;
   font-family: var(--font-body); font-size: 14px; line-height: 1.6;
   outline: none; transition: all 0.2s ease; resize: vertical;
 }
 .pm-input:focus { border-color: var(--accent); box-shadow: var(--accent-glow-sm); background: var(--bg-overlay); }
 .pm-input::placeholder { color: var(--text-muted); }
 
-/* ─── Utility ───────────────────────────────────────────────────────── */
+/* ─── Utilities ─────────────────────────────────────────────────────── */
 .pm-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pm-clamp-2  { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* ─── Animations ────────────────────────────────────────────────────── */
-@keyframes fadeUp   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-@keyframes spinSlow { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-@keyframes blink    { 0%,100% { opacity:1; } 50% { opacity:0.25; } }
-@keyframes shimmer  { 0% { background-position:-200% center; } 100% { background-position:200% center; } }
-@keyframes glow-pulse { 0%,100% { opacity:0.6; } 50% { opacity:1; } }
+@keyframes fadeUp    { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spinSlow  { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+@keyframes blink     { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
+@keyframes redPulse  { 0%,100% { box-shadow: 0 0 10px rgba(220,38,38,0.3); } 50% { box-shadow: 0 0 30px rgba(220,38,38,0.7); } }
 
-.pm-fade-up   { animation: fadeUp 0.55s ease forwards; }
+.pm-fade-up   { animation: fadeUp 0.5s ease forwards; }
 .pm-spin-slow { animation: spinSlow 2.5s linear infinite; }
-
-/* ─── Glow line border ──────────────────────────────────────────────── */
-.pm-glow-border {
-  position: relative;
-}
-.pm-glow-border::before {
-  content: '';
-  position: absolute; inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(79,114,255,0.4), transparent 50%, rgba(139,92,246,0.3));
-  z-index: -1;
-}
