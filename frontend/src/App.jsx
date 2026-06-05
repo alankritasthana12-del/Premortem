@@ -5,7 +5,7 @@ import LandingPage from './pages/LandingPage';
 import SubmitPage from './pages/SubmitPage';
 import DashboardPage from './pages/DashboardPage';
 import ReportPage from './pages/ReportPage';
-import AuthCallbackPage from './pages/AuthCallbackPage';
+import AuthCallbackPage from './pages/AuthPage';
 import { pingBackend } from './lib/api';
 import './styles/globals.css';
 
