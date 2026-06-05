@@ -218,7 +218,7 @@ function PersonaCard({ persona, index, isBull }) {
       </div>
       {/* Content rows */}
       {rows.map((pair, ri) => (
-        <div key={ri} style={{ display:'grid', gridTemplateColumns: pair.length===2 ? '1fr 1fr' : '1fr', borderTop: ri===0?'none':'1px solid var(--bg-border)' }}>
+        <div key={ri} className="rp-persona-row" style={{ display:'grid', gridTemplateColumns: pair.length===2 ? '1fr 1fr' : '1fr', borderTop: ri===0?'none':'1px solid var(--bg-border)' }}>
           {pair.map((item, ii) => (
             isBull
               ? <BullOppItem key={ii} opp={item} isLast={ii===pair.length-1||pair.length===1}/>
@@ -301,12 +301,32 @@ export default function ReportPage() {
   }).sort((a,b)=>b.score-a.score);
 
   return (
-    <div style={{ minHeight:'100vh', paddingTop:64, background:'#000', color:'#fff', fontFamily:'Inter, sans-serif' }}>
+    <div style={{ minHeight:'100vh', paddingTop:64, background:'#000', color:'#fff', fontFamily:'Inter, sans-serif', overflowX:'hidden' }}>
       <style>{`
-        /* ── ReportPage Mobile ── */
+        /* ══ ReportPage — Comprehensive Mobile ══ */
+
+        /* Prevent ALL horizontal overflow at root */
+        body { overflow-x: hidden !important; }
+
+        /* ── Breadcrumb ── */
+        .rp-breadcrumb { overflow: hidden; }
+        .rp-breadcrumb span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 55vw; display: inline-block; vertical-align: middle; }
+
+        /* ── Main container ── */
+        .rp-main-container { box-sizing: border-box; width: 100%; max-width: 100%; }
+
+        /* ── Section headings — centered on mobile ── */
+        .rp-section-title { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+
+        /* ── Arc Gauge — no overflow ── */
+        .rp-gauge-card { box-sizing: border-box; overflow: hidden; }
+
+        /* ── Persona card rows ── */
+        .rp-persona-row { display: grid; box-sizing: border-box; }
+
         @media (max-width: 700px) {
-          /* Breadcrumb text clamp */
-          .rp-breadcrumb span { font-size: 11px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+          /* Kill any accidental wide content */
+          .rp-main-container > * { max-width: 100%; box-sizing: border-box; }
 
           /* 4-col → 2×2 */
           .rp-4col { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
@@ -317,47 +337,77 @@ export default function ReportPage() {
           /* 2-col → 1-col */
           .rp-2col { grid-template-columns: 1fr !important; }
 
-          /* Fixed 180px left col → full width */
+          /* Fixed-width col → 1-col */
           .rp-fixed-col { grid-template-columns: 1fr !important; }
-          .rp-fixed-col > div:first-child { padding-right: 0 !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.07) !important; padding-bottom: 16px !important; margin-bottom: 16px !important; }
+          .rp-fixed-col > div:first-child {
+            padding-right: 0 !important;
+            border-right: none !important;
+            border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+            padding-bottom: 16px !important;
+            margin-bottom: 8px !important;
+          }
 
-          /* Scorecard */
+          /* Scorecard 2-col → 1-col */
           .rp-scorecard { grid-template-columns: 1fr !important; }
 
-          /* Probability bar row — wrap labels below bar */
+          /* Probability bar — stack on tiny screens */
           .rp-probbar { flex-wrap: wrap !important; gap: 6px !important; }
-          .rp-probbar .rp-probbar-labels { flex-wrap: wrap !important; gap: 8px !important; }
 
-          /* Section headers wrap */
-          .rp-section-header { flex-wrap: wrap !important; }
+          /* Section headers — stack vertically, center */
+          .rp-section-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px !important;
+          }
+          .rp-section-title { flex-wrap: wrap !important; }
 
-          /* Gauges — make them smaller on mobile */
-          .rp-4col svg { width: 80px !important; height: 80px !important; }
+          /* Gauges — shrink to fit 2-col */
+          .rp-gauge-card svg { width: 78px !important; height: 78px !important; }
+          .rp-gauge-card { padding: 14px 8px !important; }
 
-          /* Container padding */
-          .rp-main-container { padding-top: 16px !important; padding-bottom: 48px !important; }
-
-          /* Venture profile panels - tighten padding */
+          /* Venture profile panel — tighten */
           .rp-4col > div { padding: 12px 10px !important; }
 
-          /* Big number font size in venture profile */
-          .rp-4col .rp-bignum { font-size: 24px !important; }
-
-          /* Bears/bulls tab toggle - full width */
+          /* Bears/bulls toggle — full width */
           .rp-tab-toggle { width: 100% !important; }
           .rp-tab-toggle button { flex: 1 !important; justify-content: center !important; }
 
-          /* Benchmark flex */
+          /* Persona card content rows — 1 item per row (no side-by-side) */
+          .rp-persona-row { grid-template-columns: 1fr !important; }
+          .rp-persona-row > div { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
+          .rp-persona-row > div:last-child { border-bottom: none !important; }
+
+          /* Benchmark — stack the two halves */
           .rp-benchrow { flex-direction: column !important; }
           .rp-benchrow > div:first-child { min-width: unset !important; }
           .rp-benchrow > div:last-child { min-width: unset !important; width: 100% !important; }
+
+          /* Executive summary padding */
+          .rp-exec-summary { padding: 14px 16px !important; }
+
+          /* Header section — tighten */
+          .rp-header-section { margin-bottom: 16px !important; }
+
+          /* Action plan container */
+          .rp-main-container { padding-top: 14px !important; padding-bottom: 48px !important; }
+
+          /* Big number font in venture profile */
+          .rp-4col span[style*="font-size:32"] { font-size: 24px !important; }
+
+          /* Section cards — reduce padding on mobile */
+          .rp-card-pad { padding: 16px 14px !important; }
+
+          /* Heading sizes */
+          .rp-section-h2 { font-size: 16px !important; }
         }
 
         @media (max-width: 420px) {
-          .rp-4col { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
-          .rp-4col > div { padding: 10px 8px !important; }
+          .rp-4col { gap: 6px !important; }
+          .rp-gauge-card svg { width: 68px !important; height: 68px !important; }
+          .rp-gauge-card { padding: 10px 6px !important; }
         }
       `}</style>
+
       {/* Ambient glow */}
       <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:`radial-gradient(ellipse 70% 40% at 50% -5%, ${riskGlow} 0%, transparent 65%)` }}/>
 
@@ -448,7 +498,7 @@ export default function ReportPage() {
             { value:vent, label:'Venture Scale',        color:'#a78bfa',  card:'rgba(167,139,250,0.05)', border:'rgba(167,139,250,0.15)'},
             { value:risk, label:'Threat Level',         color:risk>70?'#f43f5e':risk>40?'#fb923c':'#22c55e', card:'rgba(244,63,94,0.05)', border:'rgba(244,63,94,0.12)' },
           ].map(({value,label,color,card,border}) => (
-            <div key={label} style={{ padding:'20px 12px', borderRadius:16, background:card, border:`1px solid ${border}`, textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center' }}>
+            <div key={label} className="rp-gauge-card" style={{ padding:'20px 12px', borderRadius:16, background:card, border:`1px solid ${border}`, textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center' }}>
               <ArcGauge value={value} label={label} color={color} size={100}/>
             </div>
           ))}
@@ -520,8 +570,8 @@ export default function ReportPage() {
         {/* ══════════ 10 DIMENSIONS ══════════ */}
         {isNew && (
           <div style={{ marginBottom:24 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
-              <h2 style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>Due Diligence Scorecard</h2>
+            <div style={{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:10, marginBottom:16 }}>
+              <h2 className="rp-section-h2" style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>Due Diligence Scorecard</h2>
               <span style={{ fontSize:10, padding:'3px 10px', borderRadius:999, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.4)', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>10 Dimensions</span>
             </div>
             <div className="rp-scorecard" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
@@ -590,8 +640,8 @@ export default function ReportPage() {
         {/* ══════════ BEAR / BASE / BULL SCENARIOS ══════════ */}
         {isNew && report.scenarios && (
           <div style={{ marginBottom:24 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
-              <h2 style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>Outcome Scenarios</h2>
+            <div style={{ display:'flex', alignItems:'center', flexWrap:'wrap', gap:10, marginBottom:16 }}>
+              <h2 className="rp-section-h2" style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>Outcome Scenarios</h2>
               <span style={{ fontSize:10, padding:'3px 10px', borderRadius:999, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.4)', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>Bear · Base · Bull</span>
             </div>
             <div className="rp-3col" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14 }}>
@@ -768,7 +818,7 @@ export default function ReportPage() {
         {/* ══════════ ACTION PLAN ══════════ */}
         {isNew && report.actionPlan && (
           <div style={{ marginBottom:24 }}>
-            <h2 style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:'0 0 16px', letterSpacing:'-0.02em', display:'flex', alignItems:'center', gap:10 }}>
+            <h2 className="rp-section-h2" style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:'0 0 16px', letterSpacing:'-0.02em', display:'flex', alignItems:'center', flexWrap:'wrap', gap:10 }}>
               Action Plan
               <span style={{ fontSize:10, padding:'3px 10px', borderRadius:999, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.4)', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>
                 4 Horizons
