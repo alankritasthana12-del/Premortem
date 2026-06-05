@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabaseClient';
 import { submitIdea } from '../lib/api';
 
 const STEPS = [
@@ -156,7 +154,6 @@ const STAGES = [
 
 export default function SubmitPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [form, setForm]       = useState({ name:'', idea:'', market:'', model:'', competitors:'', stage:'' });
   const [errors, setErrors]   = useState({});
@@ -207,21 +204,7 @@ export default function SubmitPage() {
       
       const result = await submitIdea(payload);
 
-      // Save directly to Supabase using frontend auth session
-      if (user) {
-        try {
-          await supabase.from('reports').insert([{
-            user_id: user.id,
-            project_name: result.startup?.name || form.name,
-            threat_score: result.overallRisk || 0,
-            report_payload: result
-          }]);
-        } catch (e) {
-          console.error("Supabase insert error:", e);
-        }
-      }
-
-      // Always save a local fallback
+      // Save a local fallback
       try {
         const hist = JSON.parse(localStorage.getItem('premortem_history') || '[]');
         hist.unshift(result);
@@ -269,6 +252,7 @@ export default function SubmitPage() {
       <style>{`
         /* ── SubmitPage Mobile ── */
         @media (max-width: 600px) {
+          .sp-form-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
           .sp-card { padding: 22px 18px !important; }
           .sp-heading { margin-bottom: 28px !important; }
           .sp-heading h1 { font-size: 1.75rem !important; }
@@ -304,10 +288,10 @@ export default function SubmitPage() {
           <div className="pm-card sp-card" style={{ padding:36, position:'relative' }}>
             <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:'var(--accent-gradient)', borderRadius:'14px 14px 0 0' }}/>
 
-            <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:22 }}>
+            <form className="sp-form-grid" onSubmit={handleSubmit} style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, alignItems:'start' }}>
 
               {FIELDS.map(({ name, label, hint, placeholder, type, rows }) => (
-                <div key={name}>
+                <div key={name} style={{ gridColumn: type === 'textarea' ? '1 / -1' : 'span 1' }}>
                   <label style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--text-primary)', marginBottom:5, letterSpacing:'0.06em', textTransform:'uppercase' }}>
                     {label}
                   </label>
@@ -331,7 +315,7 @@ export default function SubmitPage() {
               ))}
 
               {/* Stage */}
-              <div>
+              <div style={{ gridColumn:'1 / -1' }}>
                 <label style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--text-primary)', marginBottom:5, letterSpacing:'0.06em', textTransform:'uppercase' }}>
                   Current Stage
                 </label>
@@ -361,7 +345,7 @@ export default function SubmitPage() {
               <button
                 type="submit"
                 className="pm-btn-primary sp-submit-btn"
-                style={{ width:'100%', justifyContent:'center', fontSize:15, padding:'14px', marginTop:6 }}
+                style={{ gridColumn:'1 / -1', width:'100%', justifyContent:'center', fontSize:15, padding:'14px', marginTop:6 }}
               >
                 Analyze My Idea
                 <svg width="15" height="15" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24">

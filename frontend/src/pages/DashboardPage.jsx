@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabaseClient';
+import { Link, useNavigate } from 'react-router-dom';
 
 const getRisk = (score) => {
   if (score>70) return { label:'High Risk',   color:'#f43f5e', bg:'rgba(244,63,94,0.1)',   border:'rgba(244,63,94,0.25)'  };
@@ -19,37 +18,24 @@ const getTier = (report) => {
 export default function DashboardPage() {
   const [history,  setHistory]  = useState([]);
   const [fetching, setFetching] = useState(true);
-  const { user, signInWithGoogle, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      const load = async () => {
-        setFetching(true);
-        try {
-          const { data, error } = await supabase
-            .from('reports')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-          
-          setHistory(!data || data.length === 0
-            ? JSON.parse(localStorage.getItem('premortem_history')||'[]')
-            : data.map(d => d.report_payload));
-        } catch (e) {
-          console.error("Dashboard fetch error:", e);
-          setHistory(JSON.parse(localStorage.getItem('premortem_history')||'[]'));
-        } finally { setFetching(false); }
-      };
-      load();
-    } else if (!loading) { setFetching(false); setHistory([]); }
-  },[user,loading]);
+    const load = () => {
+      setFetching(true);
+      try {
+        setHistory(JSON.parse(localStorage.getItem('premortem_history')||'[]'));
+      } catch {
+        setHistory([]);
+      } finally { 
+        setFetching(false); 
+      }
+    };
+    load();
+  }, []);
 
   const clearHistory = async () => {
     if (!window.confirm('Clear all saved reports? This cannot be undone.')) return;
-    if (user) await supabase.from('reports').delete().eq('user_id',user.id);
     localStorage.removeItem('premortem_history');
     setHistory([]);
   };
@@ -65,7 +51,7 @@ export default function DashboardPage() {
           <div>
             <div className="pm-label">My Reports</div>
             <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:'clamp(1.8rem,3vw,2.4rem)', letterSpacing:'-0.035em', lineHeight:1.15, color:'var(--text-primary)', margin:'0 0 6px' }}>
-              {user ? `${user.user_metadata?.full_name?.split(' ')[0]||'Your'}'s Dashboard` : 'My Reports'}
+              My Reports
             </h1>
             <p style={{ color:'var(--text-secondary)', fontSize:14 }}>
               {fetching ? 'Loading your reports…'
@@ -88,33 +74,10 @@ export default function DashboardPage() {
         </div>
 
         {/* States */}
-        {loading||fetching ? (
+        {fetching ? (
           <div style={{ paddingTop:120, paddingBottom:120, display:'flex', flexDirection:'column', alignItems:'center', gap:16 }}>
             <div style={{ width:36, height:36, borderRadius:'50%', border:'2px solid var(--accent)', borderTopColor:'transparent', animation:'spinSlow 0.8s linear infinite' }}/>
             <p style={{ color:'var(--text-muted)', fontSize:14 }}>Loading your reports…</p>
-          </div>
-
-        ) : !user ? (
-          <div style={{ background:'var(--bg-surface)', border:'1px solid var(--bg-border)', borderRadius:24, padding:'clamp(40px,8vw,80px) clamp(20px,5vw,40px)', textAlign:'center', maxWidth:520, margin:'0 auto' }}>
-            <div style={{ width:60, height:60, borderRadius:18, background:'var(--accent-dim)', border:'1px solid var(--accent-border)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px' }}>
-              <svg width="28" height="28" fill="none" stroke="var(--accent-bright)" strokeWidth="1.75" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-            </div>
-            <h2 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:22, color:'var(--text-primary)', marginBottom:10, letterSpacing:'-0.02em' }}>Sign in to view your history</h2>
-            <p style={{ color:'var(--text-secondary)', fontSize:14, lineHeight:1.75, maxWidth:360, margin:'0 auto 28px' }}>Your stress tests are saved securely to your account. Sign in to access your failure reports anytime.</p>
-            <button
-              onClick={()=>signInWithGoogle(window.location.pathname)}
-              style={{ display:'inline-flex', alignItems:'center', gap:10, padding:'12px 24px', borderRadius:12, border:'1px solid var(--bg-border-strong)', background:'rgba(255,255,255,0.04)', color:'var(--text-primary)', fontSize:14, fontWeight:600, cursor:'pointer', transition:'all 0.2s', fontFamily:'var(--font-body)' }}
-              onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.08)';e.currentTarget.style.borderColor='var(--accent-border)';}}
-              onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,0.04)';e.currentTarget.style.borderColor='var(--bg-border-strong)';}}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Sign in with Google
-            </button>
           </div>
 
         ) : history.length===0 ? (
