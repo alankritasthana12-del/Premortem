@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Link, useNavigate } from 'react-router-dom';
 
 const getRisk = (score) => {
   if (score>70) return { label:'High Risk',   color:'#f43f5e', bg:'rgba(244,63,94,0.1)',   border:'rgba(244,63,94,0.25)'  };
