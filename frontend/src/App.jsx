@@ -6,6 +6,7 @@ import SubmitPage from './pages/SubmitPage';
 import DashboardPage from './pages/DashboardPage';
 import ReportPage from './pages/ReportPage';
 import AuthCallbackPage from './pages/AuthPage';
+import { AuthProvider } from './contexts/AuthContext';
 import { pingBackend } from './lib/api';
 import './styles/globals.css';
 
@@ -17,16 +18,18 @@ export default function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/submit" element={<SubmitPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/report" element={<ReportPage />} />
-        <Route path="/auth/callback" element={<AuthCallbackPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/submit" element={<SubmitPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
