@@ -87,24 +87,14 @@ export default function LandingPage() {
 
           {/* ── Eyebrow pill ── */}
           <div style={{
-            display:'inline-flex', alignItems:'center', gap:10,
-            padding:'8px 18px', borderRadius:999, marginBottom:28,
-            border:'1px solid rgba(220,38,38,0.4)',
+            display:'inline-flex', alignItems:'center', gap:8,
+            padding:'7px 16px', borderRadius:999, marginBottom:28,
+            border:'1px solid rgba(220,38,38,0.35)',
             background:'rgba(220,38,38,0.08)',
           }}>
-            {/* 8 dots representing agents */}
-            <div style={{ display:'flex', gap:4, alignItems:'center' }}>
-              {[...Array(8)].map((_,i) => (
-                <div key={i} style={{
-                  width:6, height:6, borderRadius:'50%',
-                  background:`hsl(${0 + i*4}, 90%, ${60 - i*2}%)`,
-                  boxShadow:`0 0 6px hsl(${0 + i*4}, 90%, 55%)`,
-                  animation:`blink ${1.2 + i * 0.15}s ease-in-out infinite`,
-                }}/>
-              ))}
-            </div>
+            <span style={{ width:7, height:7, borderRadius:'50%', background:'#f43f5e', boxShadow:'0 0 8px rgba(244,63,94,0.8)', flexShrink:0 }}/>
             <span style={{ color:'var(--accent-bright)', fontSize:11.5, fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>
-              12 AI Agents · 8 Bears vs 4 Bulls
+              12 AI Agents · Real-time Analysis
             </span>
           </div>
 
@@ -116,8 +106,8 @@ export default function LandingPage() {
           </h1>
 
           {/* Subheadline */}
-          <p style={{ color:'var(--text-secondary)', fontSize:17.5, lineHeight:1.8, maxWidth:540, margin:'0 auto 38px', fontWeight:400 }}>
-            Describe your startup. Eight AI-powered adversarial experts stress-test it from every critical angle and hand you a prioritised failure report in under 30 seconds.
+          <p style={{ color:'var(--text-secondary)', fontSize:'clamp(15px,2.5vw,17.5px)', lineHeight:1.8, maxWidth:540, margin:'0 auto 38px', fontWeight:400 }}>
+            Describe your startup. Twelve AI agents — 8 adversarial critics and 4 optimists — stress-test it from every angle and deliver a prioritised failure report in under 60 seconds.
           </p>
 
           {/* CTA row */}
@@ -415,22 +405,44 @@ export default function LandingPage() {
 
       {/* Footer */}
       <div className="pm-section-divider"/>
-      <footer style={{ background:'var(--bg-base)', padding:'28px 0' }}>
-        <div className="pm-container" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:28, height:28, borderRadius:8, background:'var(--accent-gradient)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
+      <footer style={{ background:'var(--bg-base)', padding:'clamp(28px,5vw,44px) 0', borderTop:'1px solid rgba(255,255,255,0.06)' }}>
+        <div className="pm-container">
+          {/* Top row */}
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', flexWrap:'wrap', gap:32, marginBottom:32 }}>
+            {/* Brand */}
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+                <div style={{ width:30, height:30, borderRadius:9, background:'var(--accent-gradient)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 12px rgba(220,38,38,0.3)' }}>
+                  <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
+                </div>
+                <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:16, color:'var(--text-primary)' }}>Premortem AI</span>
+              </div>
+              <p style={{ color:'var(--text-muted)', fontSize:13, lineHeight:1.7, maxWidth:240, margin:0 }}>
+                AI-powered startup failure analysis. Find the fatal flaws before the market does.
+              </p>
             </div>
-            <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:14, color:'var(--text-primary)' }}>Premortem</span>
-            <span style={{ color:'var(--text-muted)', fontSize:12 }}>· AI-powered failure analysis</span>
+            {/* Links */}
+            <div style={{ display:'flex', gap:48, flexWrap:'wrap' }}>
+              <div>
+                <p style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'rgba(255,255,255,0.3)', margin:'0 0 14px' }}>Product</p>
+                <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                  {[{to:'/submit',label:'Analyze Idea'},{to:'/dashboard',label:'My Reports'}].map(({to,label})=>(
+                    <Link key={to} to={to} style={{ color:'var(--text-secondary)', fontSize:13, textDecoration:'none', transition:'color 0.2s' }}
+                      onMouseEnter={e=>e.currentTarget.style.color='#fff'}
+                      onMouseLeave={e=>e.currentTarget.style.color='var(--text-secondary)'}
+                    >{label}</Link>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-          <div style={{ display:'flex', gap:24 }}>
-            {[{to:'/submit',label:'Analyze'},{to:'/dashboard',label:'My Reports'}].map(({to,label})=>(
-              <Link key={to} to={to} style={{ color:'var(--text-muted)', fontSize:13, textDecoration:'none', transition:'color 0.2s' }}
-                onMouseEnter={e=>e.target.style.color='var(--text-primary)'}
-                onMouseLeave={e=>e.target.style.color='var(--text-muted)'}
-              >{label}</Link>
-            ))}
+          {/* Bottom bar */}
+          <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:20, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12 }}>
+            <p style={{ color:'rgba(255,255,255,0.2)', fontSize:12, margin:0 }}>© 2025 Premortem AI · Built for founders who think ahead</p>
+            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+              <span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', boxShadow:'0 0 6px rgba(34,197,94,0.6)' }}/>
+              <span style={{ color:'rgba(255,255,255,0.25)', fontSize:11 }}>All systems operational</span>
+            </div>
           </div>
         </div>
       </footer>

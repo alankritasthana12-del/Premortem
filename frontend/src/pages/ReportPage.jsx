@@ -303,17 +303,59 @@ export default function ReportPage() {
   return (
     <div style={{ minHeight:'100vh', paddingTop:64, background:'#000', color:'#fff', fontFamily:'Inter, sans-serif' }}>
       <style>{`
+        /* ── ReportPage Mobile ── */
         @media (max-width: 700px) {
+          /* Breadcrumb text clamp */
+          .rp-breadcrumb span { font-size: 11px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+
+          /* 4-col → 2×2 */
           .rp-4col { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+
+          /* 3-col → 1-col */
           .rp-3col { grid-template-columns: 1fr !important; }
+
+          /* 2-col → 1-col */
           .rp-2col { grid-template-columns: 1fr !important; }
+
+          /* Fixed 180px left col → full width */
           .rp-fixed-col { grid-template-columns: 1fr !important; }
-          .rp-benchrow { flex-direction: column !important; align-items: flex-start !important; }
+          .rp-fixed-col > div:first-child { padding-right: 0 !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.07) !important; padding-bottom: 16px !important; margin-bottom: 16px !important; }
+
+          /* Scorecard */
+          .rp-scorecard { grid-template-columns: 1fr !important; }
+
+          /* Probability bar row — wrap labels below bar */
+          .rp-probbar { flex-wrap: wrap !important; gap: 6px !important; }
+          .rp-probbar .rp-probbar-labels { flex-wrap: wrap !important; gap: 8px !important; }
+
+          /* Section headers wrap */
           .rp-section-header { flex-wrap: wrap !important; }
-          .rp-scorecard { max-width: 100% !important; grid-template-columns: 1fr !important; }
+
+          /* Gauges — make them smaller on mobile */
+          .rp-4col svg { width: 80px !important; height: 80px !important; }
+
+          /* Container padding */
+          .rp-main-container { padding-top: 16px !important; padding-bottom: 48px !important; }
+
+          /* Venture profile panels - tighten padding */
+          .rp-4col > div { padding: 12px 10px !important; }
+
+          /* Big number font size in venture profile */
+          .rp-4col .rp-bignum { font-size: 24px !important; }
+
+          /* Bears/bulls tab toggle - full width */
+          .rp-tab-toggle { width: 100% !important; }
+          .rp-tab-toggle button { flex: 1 !important; justify-content: center !important; }
+
+          /* Benchmark flex */
+          .rp-benchrow { flex-direction: column !important; }
+          .rp-benchrow > div:first-child { min-width: unset !important; }
+          .rp-benchrow > div:last-child { min-width: unset !important; width: 100% !important; }
         }
-        @media (max-width: 480px) {
+
+        @media (max-width: 420px) {
           .rp-4col { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+          .rp-4col > div { padding: 10px 8px !important; }
         }
       `}</style>
       {/* Ambient glow */}
@@ -334,7 +376,7 @@ export default function ReportPage() {
         </div>
       </div>
 
-      <div className="pm-container" style={{ paddingTop:52, paddingBottom:96, position:'relative' }}>
+      <div className="pm-container rp-main-container" style={{ paddingTop:52, paddingBottom:96, position:'relative' }}>
 
         {/* ══════════ HEADER ══════════ */}
         <div style={{ marginBottom:24 }}>
@@ -523,7 +565,7 @@ export default function ReportPage() {
 
         {/* ══════════ STRENGTHS + WEAKNESSES ══════════ */}
         {isNew && report.strengths?.length > 0 && (
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:24 }}>
+          <div className="rp-2col" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:24 }}>
             <div style={{ padding:'20px 22px', borderRadius:14, background:'rgba(34,197,94,0.04)', border:'1px solid rgba(34,197,94,0.12)' }}>
               <p style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#22c55e', margin:'0 0 14px' }}>Top Strengths</p>
               {report.strengths.map((s,i) => (
@@ -596,7 +638,7 @@ export default function ReportPage() {
             </div>
             {/* Probability bar */}
             {report.scenarios.bear && report.scenarios.base && report.scenarios.bull && (
-              <div style={{ marginTop:12, padding:'12px 16px', borderRadius:10, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', display:'flex', alignItems:'center', gap:8 }}>
+              <div className="rp-probbar" style={{ marginTop:12, padding:'12px 16px', borderRadius:10, background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', display:'flex', alignItems:'center', gap:8 }}>
                 <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'rgba(255,255,255,0.35)', flexShrink:0 }}>Probability distribution</span>
                 <div style={{ flex:1, height:8, borderRadius:999, overflow:'hidden', display:'flex', gap:2 }}>
                   <div style={{ width:`${report.scenarios.bear.probability}%`, height:'100%', background:'linear-gradient(90deg,#b91c1c,#f43f5e)', borderRadius:'999px 0 0 999px' }}/>
@@ -643,7 +685,7 @@ export default function ReportPage() {
         {/* ══════════ ADVERSARIAL BREAKDOWN ══════════ */}
         <div style={{ marginBottom:24 }}>
           {/* Section header + tab toggle */}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12, marginBottom:16 }}>
+          <div className="rp-section-header" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12, marginBottom:16 }}>
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
               <h2 style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>
                 Adversarial Breakdown
@@ -685,7 +727,7 @@ export default function ReportPage() {
 
         {/* ══════════ CRITICAL FAILURE MODES + SUCCESS PATHS ══════════ */}
         {isNew && (report.criticalFailureModes?.length > 0 || report.successPaths?.length > 0) && (
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:24 }}>
+          <div className="rp-2col" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:24 }}>
             {/* Failure modes */}
             {report.criticalFailureModes?.length > 0 && (
               <div style={{ padding:'20px 22px', borderRadius:14, background:'rgba(244,63,94,0.04)', border:'1px solid rgba(244,63,94,0.12)' }}>
