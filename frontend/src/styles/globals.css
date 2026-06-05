@@ -258,3 +258,57 @@ body::after {
 
 .pm-fade-up   { animation: fadeUp 0.5s ease forwards; }
 .pm-spin-slow { animation: spinSlow 2.5s linear infinite; }
+
+/* ─── MOBILE RESPONSIVE ─────────────────────────────────────────────── */
+
+/* Tablet — 2-col grids become 1 */
+@media (max-width: 768px) {
+  .pm-grid-2, .pm-grid-3, .pm-grid-4 { grid-template-columns: 1fr !important; }
+  .pm-columns-2 { column-count: 1; }
+  .pm-container { padding: 0 16px; }
+  .pm-page { padding-top: 60px; }
+
+  /* Navbar */
+  .pm-nav-inner { padding: 0 16px; gap: 12px; }
+
+  /* Buttons */
+  .pm-btn-primary { font-size: 13px; padding: 11px 20px; }
+}
+
+/* ─── Responsive utility classes for inline-style overrides ─────────── */
+
+/* 4-col grid → 2-col on tablet → 1-col on mobile */
+.rg-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+@media (max-width: 900px) {
+  .rg-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .rg-4 { grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+
+/* 3-col grid → 2-col → 1-col */
+.rg-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 768px) {
+  .rg-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .rg-3 { grid-template-columns: 1fr; }
+}
+
+/* 2-col grid → 1-col on mobile */
+.rg-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 600px) {
+  .rg-2 { grid-template-columns: 1fr; }
+}

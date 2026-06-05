@@ -83,7 +83,7 @@ export default function LandingPage() {
           background:'linear-gradient(90deg, transparent, rgba(220,38,38,0.3), rgba(239,68,68,0.2), transparent)',
         }}/>
 
-        <div className="pm-container" style={{ paddingTop:80, paddingBottom:80, textAlign:'center', position:'relative', zIndex:1 }}>
+        <div className="pm-container" style={{ paddingTop:'clamp(48px,8vw,80px)', paddingBottom:'clamp(48px,8vw,80px)', textAlign:'center', position:'relative', zIndex:1 }}>
 
           {/* ── Eyebrow pill ── */}
           <div style={{
@@ -156,7 +156,7 @@ export default function LandingPage() {
       </section>
 
       {/* ════════════════ HOW IT WORKS ════════════════ */}
-      <section style={{ position:'relative', padding:'96px 0', overflow:'hidden' }}>
+      <section style={{ position:'relative', padding:'clamp(48px,8vw,96px) 0', overflow:'hidden' }}>
         <div style={sectionGlow('rgba(56,189,248,0.05)')}/>
         <div className="pm-container">
           <div style={{ textAlign:'center', marginBottom:56 }}>
@@ -186,7 +186,7 @@ export default function LandingPage() {
       <div className="pm-section-divider"/>
 
       {/* ════════════════ 8 CRITICS ════════════════ */}
-      <section style={{ position:'relative', padding:'96px 0', overflow:'hidden', background:'rgba(255,255,255,0.015)' }}>
+      <section style={{ position:'relative', padding:'clamp(48px,8vw,96px) 0', overflow:'hidden', background:'rgba(255,255,255,0.015)' }}>
         <div style={sectionGlow('rgba(220,38,38,0.06)')}/>
         <div className="pm-container">
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', flexWrap:'wrap', gap:24, marginBottom:48 }}>
@@ -217,7 +217,7 @@ export default function LandingPage() {
       <div className="pm-section-divider"/>
 
       {/* ════════════════ SAMPLE REPORT ════════════════ */}
-      <section id="sample-report" style={{ position:'relative', padding:'96px 0', overflow:'hidden', scrollMarginTop:80 }}>
+      <section id="sample-report" style={{ position:'relative', padding:'clamp(48px,8vw,96px) 0', overflow:'hidden', scrollMarginTop:80 }}>
         <div style={sectionGlow('rgba(79,114,255,0.06)')}/>
         <div className="pm-container">
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', flexWrap:'wrap', gap:24, marginBottom:36 }}>
@@ -269,7 +269,7 @@ export default function LandingPage() {
               </div>
 
               {/* Venture Profile strip */}
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginTop:18 }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))', gap:10, marginTop:18 }}>
                 {[
                   { label:'Business Quality', value:'68', suffix:'/100', color:'#22c55e', note:'Good business fundamentals' },
                   { label:'Market Ceiling',   value:'42', suffix:'/100', color:'#38bdf8', badge:'Medium', badgeColor:'#38bdf8' },
@@ -294,7 +294,7 @@ export default function LandingPage() {
               {/* Dimension bars */}
               <div style={{ marginTop:18 }}>
                 <p style={{ color:'var(--text-muted)', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:12 }}>Due Diligence Scorecard</p>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px 24px', maxWidth:560 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px 24px', maxWidth:'100%' }}>
                   {[
                     { name:'Market Opportunity', score:6, color:'#22c55e' },
                     { name:'Execution Complexity', score:7, color:'#f43f5e', risk:true },
@@ -393,7 +393,7 @@ export default function LandingPage() {
       <div className="pm-section-divider"/>
 
       {/* ════════════════ FINAL CTA ════════════════ */}
-      <section style={{ position:'relative', padding:'96px 0', overflow:'hidden', background:'rgba(220,38,38,0.02)', textAlign:'center' }}>
+      <section style={{ position:'relative', padding:'clamp(48px,8vw,96px) 0', overflow:'hidden', background:'rgba(220,38,38,0.02)', textAlign:'center' }}>
         <div style={{ position:'absolute', bottom:'-20%', left:'50%', transform:'translateX(-50%)', width:700, height:500, borderRadius:'50%', background:'radial-gradient(circle,rgba(220,38,38,0.12) 0%,transparent 65%)', pointerEvents:'none', filter:'blur(40px)' }}/>
         <div className="pm-container" style={{ position:'relative', zIndex:1 }}>
           <h2 className="pm-h2" style={{ fontSize:'clamp(2rem,4.5vw,3.5rem)', marginBottom:20 }}>

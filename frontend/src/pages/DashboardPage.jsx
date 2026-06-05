@@ -90,7 +90,7 @@ export default function DashboardPage() {
           </div>
 
         ) : !user ? (
-          <div style={{ background:'var(--bg-surface)', border:'1px solid var(--bg-border)', borderRadius:24, padding:'80px 40px', textAlign:'center', maxWidth:520, margin:'0 auto' }}>
+          <div style={{ background:'var(--bg-surface)', border:'1px solid var(--bg-border)', borderRadius:24, padding:'clamp(40px,8vw,80px) clamp(20px,5vw,40px)', textAlign:'center', maxWidth:520, margin:'0 auto' }}>
             <div style={{ width:60, height:60, borderRadius:18, background:'var(--accent-dim)', border:'1px solid var(--accent-border)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px' }}>
               <svg width="28" height="28" fill="none" stroke="var(--accent-bright)" strokeWidth="1.75" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
             </div>
@@ -113,7 +113,7 @@ export default function DashboardPage() {
           </div>
 
         ) : history.length===0 ? (
-          <div style={{ background:'var(--bg-surface)', border:'2px dashed var(--bg-border-strong)', borderRadius:24, padding:'80px 40px', textAlign:'center' }}>
+          <div style={{ background:'var(--bg-surface)', border:'2px dashed var(--bg-border-strong)', borderRadius:24, padding:'clamp(40px,8vw,80px) clamp(20px,5vw,40px)', textAlign:'center' }}>
             <div style={{ width:60, height:60, borderRadius:18, background:'var(--bg-elevated)', border:'1px solid var(--bg-border-strong)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px' }}>
               <svg width="28" height="28" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/></svg>
             </div>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
 
         ) : (
           /* Grid */
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:18 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(min(300px,100%),1fr))', gap:18 }}>
             {history.map((report,idx)=>{
               const risk=getRisk(report.overallRisk||0);
               const rankMap={CRITICAL:4,HIGH:3,MEDIUM:2,LOW:1};

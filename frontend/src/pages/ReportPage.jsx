@@ -302,6 +302,20 @@ export default function ReportPage() {
 
   return (
     <div style={{ minHeight:'100vh', paddingTop:64, background:'#000', color:'#fff', fontFamily:'Inter, sans-serif' }}>
+      <style>{`
+        @media (max-width: 700px) {
+          .rp-4col { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+          .rp-3col { grid-template-columns: 1fr !important; }
+          .rp-2col { grid-template-columns: 1fr !important; }
+          .rp-fixed-col { grid-template-columns: 1fr !important; }
+          .rp-benchrow { flex-direction: column !important; align-items: flex-start !important; }
+          .rp-section-header { flex-wrap: wrap !important; }
+          .rp-scorecard { max-width: 100% !important; grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 480px) {
+          .rp-4col { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+        }
+      `}</style>
       {/* Ambient glow */}
       <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:`radial-gradient(ellipse 70% 40% at 50% -5%, ${riskGlow} 0%, transparent 65%)` }}/>
 
@@ -385,7 +399,7 @@ export default function ReportPage() {
         </div>
 
         {/* ══════════ 4 GAUGES ══════════ */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:14, marginBottom:16 }}>
+        <div className="rp-4col" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:14, marginBottom:16 }}>
           {[
             { value:opp,  label:'Opportunity',        color:'#38bdf8',  card:'rgba(56,189,248,0.05)',  border:'rgba(56,189,248,0.15)' },
             { value:succ, label:'Success Probability', color:'#22c55e',  card:'rgba(34,197,94,0.05)',   border:'rgba(34,197,94,0.12)'  },
@@ -400,7 +414,7 @@ export default function ReportPage() {
 
         {/* ══════════ VENTURE PROFILE PANEL ══════════ */}
         {isNew && (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 }}>
+          <div className="rp-4col" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 }}>
 
             {/* Business Quality */}
             <div style={{ padding:'16px 18px', borderRadius:14, background:'rgba(34,197,94,0.04)', border:'1px solid rgba(34,197,94,0.15)' }}>
@@ -468,7 +482,7 @@ export default function ReportPage() {
               <h2 style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>Due Diligence Scorecard</h2>
               <span style={{ fontSize:10, padding:'3px 10px', borderRadius:999, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.4)', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>10 Dimensions</span>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+            <div className="rp-scorecard" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
               {/* Opportunity dims (first 6) */}
               <div style={{ padding:'20px 22px', borderRadius:14, background:'rgba(56,189,248,0.04)', border:'1px solid rgba(56,189,248,0.15)' }}>
                 <p style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'#38bdf8', margin:'0 0 16px', display:'flex', alignItems:'center', gap:8 }}>
@@ -538,7 +552,7 @@ export default function ReportPage() {
               <h2 style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:700, fontSize:18, color:'#fff', margin:0, letterSpacing:'-0.02em' }}>Outcome Scenarios</h2>
               <span style={{ fontSize:10, padding:'3px 10px', borderRadius:999, background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.4)', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' }}>Bear · Base · Bull</span>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14 }}>
+            <div className="rp-3col" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14 }}>
               {[
                 {
                   key:'bear', label:'Bear Case', icon:'🐻',
@@ -718,7 +732,7 @@ export default function ReportPage() {
                 4 Horizons
               </span>
             </h2>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:14 }}>
+            <div className="rp-4col" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:14 }}>
               {[
                 { key:'immediate',    label:'This Week',  icon:'⚡', color:'#f43f5e', bg:'rgba(244,63,94,0.06)',   border:'rgba(244,63,94,0.15)' },
                 { key:'thirtyDays',   label:'30 Days',    icon:'📅', color:'#fb923c', bg:'rgba(251,146,60,0.06)',  border:'rgba(251,146,60,0.15)' },
@@ -744,7 +758,7 @@ export default function ReportPage() {
         {/* ══════════ HISTORICAL PRECEDENTS (old field) ══════════ */}
         {report.challengerPath && (
           <div style={{ padding:'22px 24px', borderRadius:14, background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.07)' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'180px 1fr', gap:28 }}>
+            <div className="rp-fixed-col" style={{ display:'grid', gridTemplateColumns:'180px 1fr', gap:28 }}>
               <div style={{ paddingRight:28, borderRight:'1px solid rgba(255,255,255,0.07)' }}>
                 <p style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'rgba(255,255,255,0.3)', marginBottom:6 }}>Survival Rate</p>
                 <p style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:900, fontSize:48, color:'#f87171', letterSpacing:'-0.04em', marginBottom:4 }}>{report.challengerPath.successRate||'—'}</p>
