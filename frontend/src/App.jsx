@@ -26,6 +26,7 @@ export default function App() {
           <Route path="/submit" element={<SubmitPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/report" element={<ReportPage />} />
+          <Route path="/report/:id" element={<ReportPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
