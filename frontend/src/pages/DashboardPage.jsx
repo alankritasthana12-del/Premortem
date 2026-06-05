@@ -27,14 +27,19 @@ export default function DashboardPage() {
       const load = async () => {
         setFetching(true);
         try {
-          const BASE = import.meta.env.VITE_API_URL||'https://premortem-backend.onrender.com';
-          const res = await fetch(`${BASE}/analyze/history/${user.id}`);
-          if (!res.ok) throw new Error();
-          const data = await res.json();
-          setHistory(!data||data.length===0
+          const { data, error } = await supabase
+            .from('reports')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+          
+          setHistory(!data || data.length === 0
             ? JSON.parse(localStorage.getItem('premortem_history')||'[]')
-            : data.map(d=>d.report_payload||d.report_data));
-        } catch {
+            : data.map(d => d.report_payload));
+        } catch (e) {
+          console.error("Dashboard fetch error:", e);
           setHistory(JSON.parse(localStorage.getItem('premortem_history')||'[]'));
         } finally { setFetching(false); }
       };

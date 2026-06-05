@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 import { submitIdea } from '../lib/api';
 
 const STEPS = [
@@ -202,9 +203,31 @@ export default function SubmitPage() {
 
     try {
       const payload = { ...form };
-      if (user) payload.user_id = user.id;
+      // Not sending user_id to backend anymore, we save locally on frontend
       
       const result = await submitIdea(payload);
+
+      // Save directly to Supabase using frontend auth session
+      if (user) {
+        try {
+          await supabase.from('reports').insert([{
+            user_id: user.id,
+            project_name: result.startup?.name || form.name,
+            threat_score: result.overallRisk || 0,
+            report_payload: result
+          }]);
+        } catch (e) {
+          console.error("Supabase insert error:", e);
+        }
+      }
+
+      // Always save a local fallback
+      try {
+        const hist = JSON.parse(localStorage.getItem('premortem_history') || '[]');
+        hist.unshift(result);
+        localStorage.setItem('premortem_history', JSON.stringify(hist));
+      } catch(e) {}
+
       clearInterval(interval);
       setStep(STEPS.length - 1);
       setTimeout(() => navigate('/report', { state: { report: result } }), 500);
