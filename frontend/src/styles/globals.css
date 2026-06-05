@@ -122,13 +122,16 @@ body::after {
 .pm-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 .pm-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 
+@media (max-width: 1024px) {
+  .pm-grid-3 { grid-template-columns: 1fr 1fr; }
+  .pm-grid-4 { grid-template-columns: 1fr 1fr; }
+}
 @media (max-width: 768px) {
   .pm-grid-2, .pm-grid-3, .pm-grid-4 { grid-template-columns: 1fr; }
   .pm-container { padding: 0 16px; }
 }
-@media (max-width: 1024px) {
-  .pm-grid-3 { grid-template-columns: 1fr 1fr; }
-  .pm-grid-4 { grid-template-columns: 1fr 1fr; }
+@media (max-width: 600px) {
+  .pm-grid-2 { grid-template-columns: 1fr; }
 }
 
 /* ─── Cards ─────────────────────────────────────────────────────────── */
@@ -245,6 +248,10 @@ body::after {
 }
 .pm-input:focus { border-color: var(--accent); box-shadow: var(--accent-glow-sm); background: var(--bg-overlay); }
 .pm-input::placeholder { color: var(--text-muted); }
+/* iOS: force 16px on inputs to prevent auto-zoom on focus */
+@media (max-width: 600px) {
+  .pm-input { font-size: 16px !important; }
+}
 
 /* ─── Utilities ─────────────────────────────────────────────────────── */
 .pm-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

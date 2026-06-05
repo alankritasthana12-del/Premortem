@@ -16,16 +16,20 @@ app = FastAPI(title="Premortem API")
 # Setup CORS
 origins = [
     settings.FRONTEND_URL,
-    "http://localhost:5173", # Fallback
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://premortem-ai.vercel.app",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Include routes
 app.include_router(analyze.router, prefix="/analyze", tags=["Analyze"])

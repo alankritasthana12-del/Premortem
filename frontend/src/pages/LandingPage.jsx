@@ -39,6 +39,29 @@ const sectionGlow = (color = 'rgba(220,38,38,0.06)') => ({
 export default function LandingPage() {
   return (
     <div style={{ background:'var(--bg-base)', color:'var(--text-primary)', fontFamily:'var(--font-body)', paddingTop:64 }}>
+      <style>{`
+        /* ── LandingPage Mobile ── */
+        @media (max-width: 600px) {
+          .lp-hero-cta { flex-direction: column !important; align-items: stretch !important; }
+          .lp-hero-cta a, .lp-hero-cta button { text-align: center !important; justify-content: center !important; }
+          .lp-stats-grid { grid-template-columns: 1fr 1fr !important; gap: 0 !important; }
+          .lp-stats-grid > div { border-bottom: 1px solid rgba(255,255,255,0.06); }
+          .lp-sample-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+          .lp-sample-gauges { justify-content: flex-start !important; gap: 8px !important; }
+          .lp-sample-gauges > div { min-width: 44px !important; padding: 8px 10px !important; }
+          .lp-scorecard-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+          .lp-scorecard-row { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+          .lp-scorecard-row span:first-child { width: auto !important; }
+          .lp-persona-preview { grid-template-columns: 1fr !important; }
+          .lp-critics-section h2 { font-size: 1.5rem !important; }
+          .lp-cta-section h2 { font-size: 1.6rem !important; }
+          .lp-cta-section br { display: none; }
+          .lp-footer-links { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+        }
+        @media (max-width: 420px) {
+          .lp-sample-gauges { flex-wrap: wrap !important; }
+        }
+      `}</style>
 
       {/* ════════════════ HERO ════════════════ */}
       <section style={{ position:'relative', overflow:'hidden', minHeight:'92vh', display:'flex', flexDirection:'column', justifyContent:'center' }}>
@@ -130,12 +153,12 @@ export default function LandingPage() {
         {/* Stats strip */}
         <div style={{ position:'relative', zIndex:1, borderTop:'1px solid rgba(255,255,255,0.07)', borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(255,255,255,0.02)' }}>
           <div className="pm-container">
-            <div className="pm-grid-4" style={{ padding:'28px 0' }}>
+            <div className="lp-stats-grid pm-grid-4" style={{ padding:'24px 0' }}>
               {stats.map((s,i) => (
-                <div key={i} style={{ textAlign:'center' }}>
-                  <div style={{ fontFamily:'var(--font-display)', fontWeight:900, fontSize:40, letterSpacing:'-0.04em', lineHeight:1, marginBottom:6 }}>
+                <div key={i} style={{ textAlign:'center', padding:'8px 0' }}>
+                  <div style={{ fontFamily:'var(--font-display)', fontWeight:900, fontSize:'clamp(28px,6vw,40px)', letterSpacing:'-0.04em', lineHeight:1, marginBottom:4 }}>
                     <span className="pm-gradient-text">{s.value}</span>
-                    <span style={{ color:'var(--cyan)', fontSize:24 }}>{s.suffix}</span>
+                    <span style={{ color:'var(--cyan)', fontSize:'clamp(18px,4vw,24px)' }}>{s.suffix}</span>
                   </div>
                   <div style={{ color:'var(--text-muted)', fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase' }}>{s.label}</div>
                 </div>
@@ -242,8 +265,8 @@ export default function LandingPage() {
                   <h3 className="pm-h2" style={{ fontSize:24, marginBottom:8 }}>{DUMMY_REPORT.startup.name}</h3>
                   <p style={{ color:'var(--text-secondary)', fontSize:13, lineHeight:1.75 }}>{DUMMY_REPORT.startup.idea?.slice(0,80)}...</p>
                 </div>
-                {/* 4 mini gauges */}
-                <div style={{ display:'flex', gap:10, flexShrink:0, flexWrap:'wrap', justifyContent:'flex-end' }}>
+              {/* 4 mini gauges */}
+                <div className="lp-sample-gauges" style={{ display:'flex', gap:10, flexShrink:0, flexWrap:'wrap', justifyContent:'flex-end' }}>
                   {[
                     { label:'Opp.',    value:58, color:'#38bdf8' },
                     { label:'Success', value:22, color:'#22c55e' },
@@ -284,18 +307,18 @@ export default function LandingPage() {
               {/* Dimension bars */}
               <div style={{ marginTop:18 }}>
                 <p style={{ color:'var(--text-muted)', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:12 }}>Due Diligence Scorecard</p>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px 24px', maxWidth:'100%' }}>
+                <div className="lp-scorecard-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'6px 24px', maxWidth:'100%' }}>
                   {[
-                    { name:'Market Opportunity', score:6, color:'#22c55e' },
+                    { name:'Market Opportunity',  score:6, color:'#22c55e' },
                     { name:'Execution Complexity', score:7, color:'#f43f5e', risk:true },
-                    { name:'Problem Severity',    score:5, color:'#86efac' },
-                    { name:'Competition Risk',    score:8, color:'#f87171', risk:true },
-                    { name:'Monetization',        score:4, color:'#fbbf24' },
-                    { name:'Technical Risk',      score:5, color:'#fb923c', risk:true },
+                    { name:'Problem Severity',     score:5, color:'#86efac' },
+                    { name:'Competition Risk',     score:8, color:'#f87171', risk:true },
+                    { name:'Monetization',         score:4, color:'#fbbf24' },
+                    { name:'Technical Risk',       score:5, color:'#fb923c', risk:true },
                   ].map((d,i) => (
-                    <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <div key={i} className="lp-scorecard-row" style={{ display:'flex', alignItems:'center', gap:8 }}>
                       <span style={{ color:'var(--text-secondary)', fontSize:10, width:120, flexShrink:0 }}>{d.name}</span>
-                      <div style={{ flex:1, height:5, borderRadius:999, background:'rgba(255,255,255,0.06)', overflow:'hidden' }}>
+                      <div style={{ flex:1, height:5, borderRadius:999, background:'rgba(255,255,255,0.06)', overflow:'hidden', minWidth:40 }}>
                         <div style={{ height:'100%', width:`${d.score*10}%`, borderRadius:999, background:`linear-gradient(90deg,${d.color}88,${d.color})`, boxShadow:`0 0 6px ${d.color}50` }}/>
                       </div>
                       <span style={{ color:d.color, fontSize:10, fontFamily:'var(--font-mono)', flexShrink:0, fontWeight:700 }}>{d.score}/10</span>
@@ -329,7 +352,7 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <div className="pm-grid-2">
+              <div className="lp-persona-preview pm-grid-2">
                 {/* Live card */}
                 <div style={{ borderRadius:14, border:'1px solid var(--bg-border-strong)', background:'var(--bg-elevated)', overflow:'hidden' }}>
                   <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderBottom:'1px solid var(--bg-border)' }}>
