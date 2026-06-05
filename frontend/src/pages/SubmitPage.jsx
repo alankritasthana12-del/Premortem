@@ -154,11 +154,19 @@ const STAGES = [
 
 export default function SubmitPage() {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
   const [form, setForm]       = useState({ name:'', idea:'', market:'', model:'', competitors:'', stage:'' });
   const [errors, setErrors]   = useState({});
   const [loading, setLoading] = useState(false);
   const [step, setStep]       = useState(0);
   const [currentPhase, setCurrentPhase] = useState('init');
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const validate = () => {
     const e = {};
@@ -202,6 +210,31 @@ export default function SubmitPage() {
   };
 
   if (loading) return <LoadingScreen step={step} currentPhase={currentPhase}/>;
+
+  if (isMobile) {
+    return (
+      <div style={{ minHeight:'100vh', background:'#000', color:'#fff', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:32, textAlign:'center', fontFamily:'Inter, sans-serif' }}>
+        <div style={{ width:80, height:80, borderRadius:20, background:'rgba(220,38,38,0.1)', border:'1px solid rgba(220,38,38,0.3)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:24, position:'relative' }}>
+          <svg width="40" height="40" fill="none" stroke="#f43f5e" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3"/>
+          </svg>
+          <style>{`
+            @keyframes pulse-glow { 0% { box-shadow:0 0 0 rgba(220,38,38,0); } 50% { box-shadow:0 0 20px rgba(220,38,38,0.4); } 100% { box-shadow:0 0 0 rgba(220,38,38,0); } }
+          `}</style>
+          <div style={{ position:'absolute', inset:-1, borderRadius:20, animation:'pulse-glow 2s infinite' }}/>
+        </div>
+        <h2 style={{ fontFamily:'Space Grotesk, sans-serif', fontSize:24, fontWeight:800, marginBottom:12, letterSpacing:'-0.02em' }}>Desktop Required</h2>
+        <p style={{ color:'rgba(255,255,255,0.6)', fontSize:14, lineHeight:1.7, maxWidth:320, marginBottom:32 }}>
+          Premortem intelligence reports contain dense data, multi-column adversarial breakdowns, and detailed charts that are best viewed on a larger screen. 
+          <br/><br/>
+          Please switch to your laptop or desktop to analyze your startup.
+        </p>
+        <button onClick={() => navigate(-1)} className="pm-btn-primary" style={{ padding:'12px 28px', fontSize:14 }}>
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="pm-page">
