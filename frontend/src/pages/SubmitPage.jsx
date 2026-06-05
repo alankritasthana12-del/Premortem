@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { submitIdea } from '../lib/api';
 
 const STEPS = [
@@ -154,6 +155,7 @@ const STAGES = [
 
 export default function SubmitPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [form, setForm]       = useState({ name:'', idea:'', market:'', model:'', competitors:'', stage:'' });
   const [errors, setErrors]   = useState({});
@@ -199,7 +201,10 @@ export default function SubmitPage() {
     }, 3500);
 
     try {
-      const result = await submitIdea(form);
+      const payload = { ...form };
+      if (user) payload.user_id = user.id;
+      
+      const result = await submitIdea(payload);
       clearInterval(interval);
       setStep(STEPS.length - 1);
       setTimeout(() => navigate('/report', { state: { report: result } }), 500);
