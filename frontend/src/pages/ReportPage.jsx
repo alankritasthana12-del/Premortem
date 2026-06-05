@@ -401,11 +401,13 @@ export default function ReportPage() {
           .rp-section-h2 { font-size: 16px !important; }
         }
 
-        @media (max-width: 420px) {
-          .rp-4col { gap: 6px !important; }
-          .rp-gauge-card svg { width: 68px !important; height: 68px !important; }
-          .rp-gauge-card { padding: 10px 6px !important; }
+        @media (max-width: 480px) {
+          /* Everything stacks fully to 1 col on small phones to avoid congestion */
+          .rp-4col { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .rp-gauge-card svg { width: 90px !important; height: 90px !important; }
+          .rp-gauge-card { padding: 16px 12px !important; }
         }
+
       `}</style>
 
       {/* Ambient glow */}
@@ -435,7 +437,7 @@ export default function ReportPage() {
               <p style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'rgba(255,255,255,0.35)', margin:0 }}>
                 Intelligence Report
               </p>
-              <h1 style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:900, fontSize:'clamp(1.8rem,4vw,3rem)', letterSpacing:'-0.04em', color:'#fff', margin:0, lineHeight:1.05 }}>
+              <h1 style={{ fontFamily:'Space Grotesk, sans-serif', fontWeight:900, fontSize:'clamp(1.8rem,4vw,3rem)', letterSpacing:'-0.04em', color:'#fff', margin:0, lineHeight:1.05, wordBreak:'break-word', overflowWrap:'anywhere' }}>
                 {report.startup?.name}
               </h1>
             </div>
