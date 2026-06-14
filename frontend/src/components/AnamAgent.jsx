@@ -12,37 +12,45 @@ export default function AnamAgent({ report }) {
     }
   }, []);
 
-  useEffect(() => {
-    // We wait for the web component to be defined and ready
-    const configureAgent = async () => {
-      await customElements.whenDefined('anam-agent');
-      
-      if (agentRef.current && report) {
-        // Build a strict system instruction string
-        const contextData = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report.
-        
-        REPORT DETAILS:
-        Startup Name: ${report.startup?.name}
-        Threat Level: ${report.overallRisk}%
-        Success Probability: ${report.successProbability}%
-        Executive Summary: ${report.executiveSummary || 'N/A'}`;
+  const contextData = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report.
+  
+  REPORT DETAILS:
+  Startup Name: ${report?.startup?.name}
+  Threat Level: ${report?.overallRisk}%
+  Success Probability: ${report?.successProbability}%
+  Executive Summary: ${report?.executiveSummary || 'N/A'}`;
 
-        // The widget usually supports addContext for injecting session context
-        try {
-          if (typeof agentRef.current.addContext === 'function') {
-            agentRef.current.addContext(contextData);
-          } else {
-            // Fallbacks
-            agentRef.current.setAttribute('system-prompt', contextData);
-            agentRef.current.context = contextData;
-          }
-        } catch (e) {
-          console.error("Failed to inject Anam context", e);
-        }
+  const injectContext = () => {
+    if (agentRef.current && typeof agentRef.current.addContext === 'function') {
+      try {
+        agentRef.current.addContext(contextData);
+        console.log("Anam context injected successfully.");
+        return true;
+      } catch (e) {
+        console.error("Failed to inject Anam context", e);
+        return false;
       }
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    const el = agentRef.current;
+    if (!el) return;
+
+    // Listen to all likely Anam events to inject context automatically when the session starts
+    const events = ['anam-session-ready', 'SESSION_READY', 'anam-connection-established', 'CONNECTION_ESTABLISHED'];
+    const handleEvent = () => {
+      injectContext();
     };
 
-    configureAgent();
+    events.forEach(ev => el.addEventListener(ev, handleEvent));
+    window.addEventListener('anam-session-ready', handleEvent);
+
+    return () => {
+      events.forEach(ev => el.removeEventListener(ev, handleEvent));
+      window.removeEventListener('anam-session-ready', handleEvent);
+    };
   }, [report]);
 
   return (
@@ -50,8 +58,36 @@ export default function AnamAgent({ report }) {
       position: 'fixed', 
       bottom: '24px', 
       right: '24px', 
-      zIndex: 9999 
+      zIndex: 9999,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: '12px'
     }}>
+      <button 
+        onClick={() => {
+          const success = injectContext();
+          if (success) {
+            alert("Report successfully loaded into the AI's memory! She can now see it.");
+          } else {
+            alert("Please start the AI session first by clicking the widget and granting microphone access, then click this button again.");
+          }
+        }}
+        style={{
+          background: 'linear-gradient(90deg, #f43f5e, #fb923c)',
+          color: 'white',
+          border: 'none',
+          padding: '8px 16px',
+          borderRadius: '999px',
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          fontSize: '12px',
+          boxShadow: '0 4px 12px rgba(244,63,94,0.3)',
+          fontFamily: 'Inter, sans-serif'
+        }}
+      >
+        🧠 Share Report with AI
+      </button>
       <anam-agent 
         ref={agentRef}
         agent-id="ebd4f7f8-ab8e-47a2-9d80-bde36011ef7c"
