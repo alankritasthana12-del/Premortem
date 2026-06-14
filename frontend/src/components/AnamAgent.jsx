@@ -90,21 +90,16 @@ export default function AnamAgent({ report }) {
   };
 
   return (
-    <div style={{ 
-      position: 'fixed', 
-      bottom: '24px', 
-      right: '24px', 
-      zIndex: 9999,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      gap: '12px',
-      width: '300px'
-    }}>
-      {!hasStarted ? (
+    <>
+      {/* Start Session Button - relocated to bottom left */}
+      {!hasStarted && (
         <button 
           onClick={startSession}
           style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '24px',
+            zIndex: 9999,
             background: 'linear-gradient(90deg, #f43f5e, #fb923c)',
             color: 'white',
             border: 'none',
@@ -119,10 +114,16 @@ export default function AnamAgent({ report }) {
         >
           👋 Talk to Liv
         </button>
-      ) : (
-        <div style={{
-          position: 'relative',
-          width: '100%',
+      )}
+
+      {/* Video Window - kept on bottom right, but made smaller */}
+      {hasStarted && (
+        <div style={{ 
+          position: 'fixed', 
+          bottom: '24px', 
+          right: '24px', 
+          zIndex: 9999,
+          width: '220px', // Made the window smaller
           aspectRatio: '9/16',
           borderRadius: '16px',
           overflow: 'hidden',
@@ -140,7 +141,7 @@ export default function AnamAgent({ report }) {
               justifyContent: 'center',
               color: 'white',
               fontFamily: 'Inter, sans-serif',
-              fontSize: '14px',
+              fontSize: '13px',
               gap: '8px',
               textAlign: 'center',
               padding: '20px'
@@ -194,6 +195,6 @@ export default function AnamAgent({ report }) {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
