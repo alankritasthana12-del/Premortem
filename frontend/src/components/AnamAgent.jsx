@@ -13,15 +13,36 @@ export default function AnamAgent({ report }) {
   }, []);
 
   useEffect(() => {
-    if (agentRef.current && report) {
-      const context = `The user is viewing the report for startup "${report.startup?.name}". Executive Summary: ${report.executiveSummary || 'N/A'}. Success Probability: ${report.successProbability}%. Threat Level: ${report.overallRisk}%. Please help them understand this report.`;
+    // We wait for the web component to be defined and ready
+    const configureAgent = async () => {
+      await customElements.whenDefined('anam-agent');
       
-      // Attempt to pass context via attribute if the widget supports it
-      agentRef.current.setAttribute('context', context);
-      
-      // Also set property in case it's exposed that way
-      agentRef.current.context = context;
-    }
+      if (agentRef.current && report) {
+        // Build a strict system instruction string
+        const contextData = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report.
+        
+        REPORT DETAILS:
+        Startup Name: ${report.startup?.name}
+        Threat Level: ${report.overallRisk}%
+        Success Probability: ${report.successProbability}%
+        Executive Summary: ${report.executiveSummary || 'N/A'}`;
+
+        // The widget usually supports addContext for injecting session context
+        try {
+          if (typeof agentRef.current.addContext === 'function') {
+            agentRef.current.addContext(contextData);
+          } else {
+            // Fallbacks
+            agentRef.current.setAttribute('system-prompt', contextData);
+            agentRef.current.context = contextData;
+          }
+        } catch (e) {
+          console.error("Failed to inject Anam context", e);
+        }
+      }
+    };
+
+    configureAgent();
   }, [report]);
 
   return (
