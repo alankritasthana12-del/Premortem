@@ -29,13 +29,12 @@ export default function AnamAgent({ report }) {
       // Build the system prompt to override the default persona behavior
       let systemPrompt = "";
       if (report) {
-        systemPrompt = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report. If the user asks about the report, YOU HAVE FULL ACCESS TO IT BELOW.
+        systemPrompt = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. You are an expert venture capitalist. Do not answer questions outside the scope of this report. If the user asks about the report or any specific part of it, YOU HAVE FULL ACCESS TO ALL THE DETAILS BELOW. You should be able to explain the strengths, weaknesses, scenarios, and personas in detail.
+
+        STARTUP IDEA / MARKET: ${report?.startup?.idea || report?.startup?.market || 'N/A'}
         
-        REPORT DETAILS:
-        Startup Name: ${report?.startup?.name}
-        Threat Level: ${report?.overallRisk}%
-        Success Probability: ${report?.successProbability}%
-        Executive Summary: ${report?.executiveSummary || 'N/A'}`;
+        REPORT DATA (JSON FORMAT):
+        ${JSON.stringify(report, null, 2).slice(0, 8000)}`; // Slice to prevent massive payloads from crashing the API
       }
 
       // Fetch session token from backend, passing the overriding system prompt
