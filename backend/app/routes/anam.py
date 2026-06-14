@@ -24,7 +24,7 @@ async def get_anam_session_token(request: AnamTokenRequest):
         persona_config = {
             "avatarId": "960f614f-ea88-47c3-9883-f02094f70874",
             "voiceId": "c48c4dd9-5050-11f1-9076-5e955d484d11",
-            "llmId": "9d8900ee-257d-4401-8817-ba9c835e9d36",
+            "llmId": "da708fce-72b2-4445-b63f-634783b0170d", # User's Custom Gemini Key
             "systemPrompt": request.systemPrompt
         }
     else:
