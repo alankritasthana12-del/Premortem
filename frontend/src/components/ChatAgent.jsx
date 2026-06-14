@@ -1,69 +1,96 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Mic, Volume2, VolumeX, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Mic, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function ChatAgent({ report }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isListening, setIsListening] = useState(false);
   
-  const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
-
-  // Auto-scroll chat
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const isIntentionalStopRef = useRef(false);
+  const chatHistoryRef = useRef([]);
 
   // Setup Speech Recognition
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
+    if (SpeechRecognition && isOpen) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
+      recognition.continuous = true; // Stay on continuously
       recognition.interimResults = false;
       recognition.lang = 'en-US';
 
       recognition.onstart = () => {
         setIsListening(true);
-        // BARGE-IN LOGIC: If the AI is speaking, shut her up instantly so she can listen
+      };
+
+      recognition.onresult = (event) => {
+        // Get the latest transcript from the continuous results
+        const lastResultIndex = event.results.length - 1;
+        const transcript = event.results[lastResultIndex][0].transcript;
+        
+        // BARGE-IN LOGIC: If the AI is speaking and user speaks, shut her up instantly
         if (window.speechSynthesis.speaking) {
           window.speechSynthesis.cancel();
           setIsSpeaking(false);
         }
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setInput(transcript);
-        // Automatically send the message after transcribing
+        
+        // Automatically send the message
         handleSendVoice(transcript);
       };
 
       recognition.onerror = (event) => {
         console.error("Speech recognition error", event.error);
-        setIsListening(false);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          isIntentionalStopRef.current = true;
+          setIsListening(false);
+        }
       };
 
       recognition.onend = () => {
         setIsListening(false);
+        // Auto-restart if it wasn't intentionally stopped and modal is still open
+        if (!isIntentionalStopRef.current && isOpen) {
+          try {
+            recognition.start();
+          } catch (e) {
+            console.error("Failed to restart recognition", e);
+          }
+        }
       };
 
       recognitionRef.current = recognition;
+      isIntentionalStopRef.current = false;
+      
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error("Failed to start initial recognition", e);
+      }
+
+      return () => {
+        isIntentionalStopRef.current = true;
+        recognition.stop();
+      };
     }
-  }, [soundEnabled, messages, report]);
+  }, [soundEnabled, isOpen, report]);
 
   const toggleListen = () => {
     if (isListening) {
+      isIntentionalStopRef.current = true;
       recognitionRef.current?.stop();
+      setIsListening(false);
     } else {
-      recognitionRef.current?.start();
+      isIntentionalStopRef.current = false;
+      try {
+        recognitionRef.current?.start();
+      } catch (e) {
+        console.error("Failed to start recognition manually", e);
+      }
     }
   };
 
@@ -73,13 +100,21 @@ export default function ChatAgent({ report }) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Find a nice female voice
+    // Find a high-quality female voice
     const voices = window.speechSynthesis.getVoices();
-    const femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Google UK English Female') || v.name.includes('Microsoft Zira'));
+    // Prioritize natural/online voices over robotic defaults
+    let femaleVoice = voices.find(v => (v.name.includes('Online') || v.name.includes('Natural')) && (v.name.includes('Female') || v.name.includes('Aria') || v.name.includes('Jenny')));
+    if (!femaleVoice) {
+        femaleVoice = voices.find(v => v.name.includes('Google') && v.name.includes('US') && v.name.includes('English'));
+    }
+    if (!femaleVoice) {
+        femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Zira'));
+    }
+    
     if (femaleVoice) utterance.voice = femaleVoice;
     
     utterance.rate = 1.0;
-    utterance.pitch = 1.2;
+    utterance.pitch = 1.1;
     
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
@@ -90,37 +125,22 @@ export default function ChatAgent({ report }) {
 
   const handleSendVoice = async (transcriptText) => {
     if (!transcriptText.trim() || isLoading) return;
-    await processMessage(transcriptText);
-  };
-
-  const handleSendText = async (e) => {
-    e?.preventDefault();
-    if (!input.trim() || isLoading) return;
-    const textToSend = input;
-    setInput('');
-    await processMessage(textToSend);
-  };
-
-  const processMessage = async (text) => {
-    const userMessage = { role: 'user', content: text };
-    setMessages(prev => [...prev, userMessage]);
+    
+    chatHistoryRef.current.push({ role: 'user', content: transcriptText });
     setIsLoading(true);
 
     try {
       const response = await axios.post(`${API_URL}/analyze/chat`, {
-        message: text,
-        history: messages,
+        message: transcriptText,
+        history: chatHistoryRef.current,
         report: report || {}
       });
 
       const replyText = response.data.response;
-      const assistantMessage = { role: 'assistant', content: replyText };
-      setMessages(prev => [...prev, assistantMessage]);
+      chatHistoryRef.current.push({ role: 'assistant', content: replyText });
       speakText(replyText);
     } catch (err) {
       console.error('Chat error:', err);
-      const errorMessage = { role: 'assistant', content: "Sorry, I had trouble processing that. Make sure the backend is running." };
-      setMessages(prev => [...prev, errorMessage]);
       speakText("Sorry, I had trouble processing that.");
     } finally {
       setIsLoading(false);
@@ -164,7 +184,7 @@ export default function ChatAgent({ report }) {
       left: '24px',
       width: '380px',
       height: '600px',
-      background: 'var(--card-bg)',
+      background: '#000',
       border: '1px solid rgba(255,255,255,0.1)',
       borderRadius: '24px',
       display: 'flex',
@@ -172,44 +192,10 @@ export default function ChatAgent({ report }) {
       zIndex: 9999,
       overflow: 'hidden',
       boxShadow: '0 24px 48px rgba(0,0,0,0.5)',
-      backdropFilter: 'blur(20px)'
     }}>
-      {/* Header */}
-      <div style={{
-        padding: '16px',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        background: 'rgba(0,0,0,0.2)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className={isSpeaking ? 'pulse-dot' : ''} style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 12px #22c55e' }} />
-          <span style={{ fontWeight: 600, fontSize: 15 }}>Liv (AI Agent)</span>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={() => {
-                setSoundEnabled(!soundEnabled);
-                if (soundEnabled) window.speechSynthesis.cancel();
-            }}
-            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-          >
-            {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
-          </button>
-          <button 
-            onClick={() => setIsOpen(false)}
-            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-          >
-            <X size={18} />
-          </button>
-        </div>
-      </div>
-
-      {/* 2D Photo Avatar */}
+      {/* 2D Photo Avatar (Full Screen) */}
       <div style={{ 
-        height: '200px', 
-        background: '#000', 
+        flex: 1,
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
@@ -220,12 +206,12 @@ export default function ChatAgent({ report }) {
         {isSpeaking && (
           <div className="avatar-glow" style={{
             position: 'absolute',
-            width: '120px',
-            height: '120px',
+            width: '200px',
+            height: '200px',
             background: 'var(--primary)',
             borderRadius: '50%',
-            filter: 'blur(40px)',
-            opacity: 0.6,
+            filter: 'blur(60px)',
+            opacity: 0.5,
             zIndex: 0
           }} />
         )}
@@ -239,141 +225,105 @@ export default function ChatAgent({ report }) {
             objectFit: 'cover',
             zIndex: 1,
             transition: 'transform 0.3s ease',
-            transform: isSpeaking ? 'scale(1.02)' : 'scale(1)'
+            transform: isSpeaking ? 'scale(1.03)' : 'scale(1)'
           }} 
         />
         
-        {/* Status Indicator */}
-        <div style={{ 
-          position: 'absolute', 
-          bottom: 12, left: 12, 
-          background: 'rgba(0,0,0,0.6)', 
-          backdropFilter: 'blur(4px)',
-          padding: '4px 8px', 
-          borderRadius: 12, 
-          fontSize: 11, 
-          color: 'var(--text-secondary)',
+        {/* Top Controls Overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0,
+          padding: '16px',
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: 6,
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)',
           zIndex: 2
         }}>
-          {isSpeaking ? (
-            <><Mic size={12} color="#22c55e" /> Speaking</>
-          ) : isListening ? (
-            <><Loader2 size={12} color="#f43f5e" className="spin" /> Listening to you...</>
-          ) : (
-            <><div style={{ width: 6, height: 6, background: '#22c55e', borderRadius: '50%' }} /> Idle</>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className={isSpeaking ? 'pulse-dot' : ''} style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 12px #22c55e' }} />
+            <span style={{ fontWeight: 600, fontSize: 15, color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Liv (AI)</span>
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              onClick={() => {
+                  setSoundEnabled(!soundEnabled);
+                  if (soundEnabled) window.speechSynthesis.cancel();
+              }}
+              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', padding: '8px', borderRadius: '50%', border: 'none', color: 'white', cursor: 'pointer' }}
+            >
+              {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </button>
+            <button 
+              onClick={() => {
+                isIntentionalStopRef.current = true;
+                recognitionRef.current?.stop();
+                setIsOpen(false);
+              }}
+              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', padding: '8px', borderRadius: '50%', border: 'none', color: 'white', cursor: 'pointer' }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom Status & Mic Overlay */}
+        <div style={{ 
+          position: 'absolute', 
+          bottom: 24, left: 0, right: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px',
+          zIndex: 2
+        }}>
+          {isLoading && (
+            <div style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '8px 16px', borderRadius: '99px', color: 'white', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Loader2 size={14} className="spin" /> Thinking...
+            </div>
           )}
+          
+          <button
+            onClick={toggleListen}
+            style={{
+              background: isListening ? '#f43f5e' : 'rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(8px)',
+              border: isListening ? 'none' : '1px solid rgba(255,255,255,0.2)',
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              boxShadow: isListening ? '0 0 24px rgba(244,63,94,0.5)' : '0 8px 16px rgba(0,0,0,0.3)'
+            }}
+          >
+            <Mic size={24} className={isListening ? 'pulse' : ''} />
+          </button>
+          
+          <div style={{ 
+            fontSize: 12, 
+            color: 'rgba(255,255,255,0.8)',
+            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+            fontWeight: 500
+          }}>
+            {isSpeaking ? 'Speaking...' : isListening ? 'Listening (Always On)...' : 'Microphone Paused'}
+          </div>
         </div>
       </div>
-
-      {/* Chat History */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {messages.length === 0 && (
-          <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13, marginTop: '20px' }}>
-            Hi! I'm Liv. Click the microphone to speak, or type your message below.
-          </div>
-        )}
-        {messages.map((msg, i) => (
-          <div key={i} style={{
-            alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-            maxWidth: '85%',
-            padding: '12px 16px',
-            borderRadius: '16px',
-            background: msg.role === 'user' ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-            border: msg.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.1)',
-            color: 'white',
-            fontSize: '14px',
-            lineHeight: 1.5,
-            borderBottomRightRadius: msg.role === 'user' ? 4 : 16,
-            borderBottomLeftRadius: msg.role === 'user' ? 16 : 4,
-          }}>
-            {msg.content}
-          </div>
-        ))}
-        {isLoading && (
-          <div style={{ alignSelf: 'flex-start', padding: '12px 16px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)' }}>
-            <Loader2 size={16} className="spin" color="var(--text-secondary)" />
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Area */}
-      <form onSubmit={handleSendText} style={{
-        padding: '16px',
-        borderTop: '1px solid rgba(255,255,255,0.1)',
-        display: 'flex',
-        gap: '8px'
-      }}>
-        <button
-          type="button"
-          onClick={toggleListen}
-          style={{
-            background: isListening ? '#f43f5e' : 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            cursor: 'pointer',
-            transition: 'background 0.2s'
-          }}
-          title="Click to speak (Barge-in)"
-        >
-          <Mic size={18} className={isListening ? 'pulse' : ''} />
-        </button>
-
-        <input 
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Ask about the report..."
-          style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '99px',
-            padding: '12px 16px',
-            color: 'white',
-            outline: 'none',
-            fontSize: '14px'
-          }}
-        />
-        <button 
-          type="submit"
-          disabled={isLoading || !input.trim()}
-          style={{
-            background: 'var(--primary)',
-            border: 'none',
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
-            opacity: isLoading || !input.trim() ? 0.5 : 1
-          }}
-        >
-          <Send size={16} />
-        </button>
-      </form>
 
       <style>{`
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
         .pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .7; transform: scale(1.1); } }
         
         .avatar-glow { animation: pulseGlow 2s ease-in-out infinite alternate; }
-        @keyframes pulseGlow { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 0.8; transform: scale(1.1); } }
+        @keyframes pulseGlow { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 0.7; transform: scale(1.2); } }
         
         .pulse-dot { animation: pulseDot 1s ease-in-out infinite; }
         @keyframes pulseDot { 0% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0.8); opacity: 0.5; } }
