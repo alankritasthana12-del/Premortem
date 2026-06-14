@@ -63,7 +63,7 @@ REPORT DATA (JSON FORMAT):
 {json.dumps(request.report, indent=2)[:8000]}"""
 
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-2.5-flash",
             system_instruction=system_instruction
         )
 
