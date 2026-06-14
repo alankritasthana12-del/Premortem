@@ -1,55 +1,8 @@
-import React, { useState, useRef, useEffect, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, ContactShadows } from '@react-three/drei';
+import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Mic, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import axios from 'axios';
-import * as THREE from 'three';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-// The 3D Avatar component
-function Avatar({ isSpeaking }) {
-  // Using a generic beautiful female Ready Player Me model
-  const { scene } = useGLTF('https://models.readyplayer.me/64b55be9d21ce4ba04a91a9b.glb');
-  const group = useRef();
-
-  // Basic mouth movement based on isSpeaking
-  useFrame((state) => {
-    if (!group.current) return;
-    
-    // Find jaw bone if possible
-    let jawBone = null;
-    group.current.traverse((child) => {
-      if (child.isBone && (child.name.includes('Jaw') || child.name.includes('jaw'))) {
-        jawBone = child;
-      }
-    });
-
-    if (jawBone) {
-      if (isSpeaking) {
-        // Randomly flap jaw
-        const time = state.clock.getElapsedTime();
-        jawBone.rotation.x = Math.max(0, Math.sin(time * 15) * 0.1);
-      } else {
-        jawBone.rotation.x = THREE.MathUtils.lerp(jawBone.rotation.x, 0, 0.1);
-      }
-    } else {
-       // Fallback animation: slight head bob
-       if (isSpeaking) {
-          const time = state.clock.getElapsedTime();
-          group.current.position.y = Math.sin(time * 10) * 0.02;
-       } else {
-          group.current.position.y = THREE.MathUtils.lerp(group.current.position.y, 0, 0.1);
-       }
-    }
-  });
-
-  return (
-    <group ref={group} position={[0, -1.5, 0]}>
-      <primitive object={scene} scale={1.5} />
-    </group>
-  );
-}
 
 export default function ChatAgent({ report }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,12 +11,61 @@ export default function ChatAgent({ report }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isListening, setIsListening] = useState(false);
   
   const messagesEndRef = useRef(null);
+  const recognitionRef = useRef(null);
 
+  // Auto-scroll chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Setup Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        // BARGE-IN LOGIC: If the AI is speaking, shut her up instantly so she can listen
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+          setIsSpeaking(false);
+        }
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        // Automatically send the message after transcribing
+        handleSendVoice(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [soundEnabled, messages, report]);
+
+  const toggleListen = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+    }
+  };
 
   const speakText = (text) => {
     if (!soundEnabled || !('speechSynthesis' in window)) return;
@@ -71,9 +73,9 @@ export default function ChatAgent({ report }) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Try to find a female voice
+    // Find a nice female voice
     const voices = window.speechSynthesis.getVoices();
-    const femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Google UK English Female'));
+    const femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Google UK English Female') || v.name.includes('Microsoft Zira'));
     if (femaleVoice) utterance.voice = femaleVoice;
     
     utterance.rate = 1.0;
@@ -86,18 +88,27 @@ export default function ChatAgent({ report }) {
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleSend = async (e) => {
+  const handleSendVoice = async (transcriptText) => {
+    if (!transcriptText.trim() || isLoading) return;
+    await processMessage(transcriptText);
+  };
+
+  const handleSendText = async (e) => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
-
-    const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    const textToSend = input;
     setInput('');
+    await processMessage(textToSend);
+  };
+
+  const processMessage = async (text) => {
+    const userMessage = { role: 'user', content: text };
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
       const response = await axios.post(`${API_URL}/analyze/chat`, {
-        message: input,
+        message: text,
         history: messages,
         report: report || {}
       });
@@ -173,12 +184,15 @@ export default function ChatAgent({ report }) {
         background: 'rgba(0,0,0,0.2)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 12px #22c55e' }} />
+          <div className={isSpeaking ? 'pulse-dot' : ''} style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 12px #22c55e' }} />
           <span style={{ fontWeight: 600, fontSize: 15 }}>Liv (AI Agent)</span>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button 
-            onClick={() => setSoundEnabled(!soundEnabled)}
+            onClick={() => {
+                setSoundEnabled(!soundEnabled);
+                if (soundEnabled) window.speechSynthesis.cancel();
+            }}
             style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
           >
             {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
@@ -192,36 +206,64 @@ export default function ChatAgent({ report }) {
         </div>
       </div>
 
-      {/* 3D Canvas */}
-      <div style={{ height: '200px', background: 'radial-gradient(circle at center, #1e1b4b, #000000)', position: 'relative' }}>
-        <Canvas camera={{ position: [0, 0.5, 2.5], fov: 45 }}>
-          <ambientLight intensity={1.5} />
-          <spotLight position={[5, 5, 5]} angle={0.15} penumbra={1} intensity={2} />
-          <pointLight position={[-5, -5, -5]} intensity={1} />
-          <Suspense fallback={null}>
-            <Avatar isSpeaking={isSpeaking} />
-            <Environment preset="city" />
-            <ContactShadows position={[0, -1.5, 0]} opacity={0.5} scale={10} blur={2} far={4} />
-          </Suspense>
-        </Canvas>
+      {/* 2D Photo Avatar */}
+      <div style={{ 
+        height: '200px', 
+        background: '#000', 
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden'
+      }}>
+        {/* Glow behind the image when speaking */}
+        {isSpeaking && (
+          <div className="avatar-glow" style={{
+            position: 'absolute',
+            width: '120px',
+            height: '120px',
+            background: 'var(--primary)',
+            borderRadius: '50%',
+            filter: 'blur(40px)',
+            opacity: 0.6,
+            zIndex: 0
+          }} />
+        )}
         
-        {/* Simple Status Indicator */}
+        <img 
+          src="/avatar.jpg" 
+          alt="Liv Avatar" 
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 1,
+            transition: 'transform 0.3s ease',
+            transform: isSpeaking ? 'scale(1.02)' : 'scale(1)'
+          }} 
+        />
+        
+        {/* Status Indicator */}
         <div style={{ 
           position: 'absolute', 
           bottom: 12, left: 12, 
-          background: 'rgba(0,0,0,0.5)', 
+          background: 'rgba(0,0,0,0.6)', 
+          backdropFilter: 'blur(4px)',
           padding: '4px 8px', 
           borderRadius: 12, 
           fontSize: 11, 
           color: 'var(--text-secondary)',
           display: 'flex',
           alignItems: 'center',
-          gap: 6
+          gap: 6,
+          zIndex: 2
         }}>
           {isSpeaking ? (
             <><Mic size={12} color="#22c55e" /> Speaking</>
+          ) : isListening ? (
+            <><Loader2 size={12} color="#f43f5e" className="spin" /> Listening to you...</>
           ) : (
-            <><div style={{ width: 6, height: 6, background: '#22c55e', borderRadius: '50%' }} /> Listening</>
+            <><div style={{ width: 6, height: 6, background: '#22c55e', borderRadius: '50%' }} /> Idle</>
           )}
         </div>
       </div>
@@ -230,7 +272,7 @@ export default function ChatAgent({ report }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13, marginTop: '20px' }}>
-            Hi! I'm Liv. I have full access to your startup report. Ask me anything about it.
+            Hi! I'm Liv. Click the microphone to speak, or type your message below.
           </div>
         )}
         {messages.map((msg, i) => (
@@ -259,12 +301,33 @@ export default function ChatAgent({ report }) {
       </div>
 
       {/* Input Area */}
-      <form onSubmit={handleSend} style={{
+      <form onSubmit={handleSendText} style={{
         padding: '16px',
         borderTop: '1px solid rgba(255,255,255,0.1)',
         display: 'flex',
         gap: '8px'
       }}>
+        <button
+          type="button"
+          onClick={toggleListen}
+          style={{
+            background: isListening ? '#f43f5e' : 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            cursor: 'pointer',
+            transition: 'background 0.2s'
+          }}
+          title="Click to speak (Barge-in)"
+        >
+          <Mic size={18} className={isListening ? 'pulse' : ''} />
+        </button>
+
         <input 
           type="text"
           value={input}
@@ -305,6 +368,15 @@ export default function ChatAgent({ report }) {
       <style>{`
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        
+        .avatar-glow { animation: pulseGlow 2s ease-in-out infinite alternate; }
+        @keyframes pulseGlow { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 0.8; transform: scale(1.1); } }
+        
+        .pulse-dot { animation: pulseDot 1s ease-in-out infinite; }
+        @keyframes pulseDot { 0% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0.8); opacity: 0.5; } }
       `}</style>
     </div>
   );
