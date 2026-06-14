@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import AnamAgent from '../components/AnamAgent';
+import ChatAgent from '../components/ChatAgent';
 
 /* ─── Severity / Impact colour maps ─────────────────────────────────── */
 const SEV = {
@@ -875,7 +875,7 @@ export default function ReportPage() {
         )}
 
       </div>
-      <AnamAgent report={report} />
+      <ChatAgent report={report} />
     </div>
   );
 }

@@ -9,7 +9,7 @@ if sys.stderr.encoding != 'utf-8':
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routes import analyze, anam
+from app.routes import analyze
 
 app = FastAPI(title="Premortem API")
 
@@ -30,10 +30,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # Include routes
 app.include_router(analyze.router, prefix="/analyze", tags=["Analyze"])
-app.include_router(anam.router, prefix="/anam", tags=["Anam"])
 
 @app.get("/health")
 def health_check():
