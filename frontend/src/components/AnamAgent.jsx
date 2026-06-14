@@ -45,8 +45,8 @@ export default function AnamAgent({ report }) {
       setClient(anamClient);
 
       // Start the stream
-      if (videoRef.current && audioRef.current) {
-        await anamClient.streamToVideoAndAudioElements(videoRef.current, audioRef.current);
+      if (document.getElementById('anam-video-element')) {
+        await anamClient.streamToVideoElement('anam-video-element');
         setStatus('Connected');
         setIsConnected(true);
 
@@ -73,7 +73,7 @@ export default function AnamAgent({ report }) {
       }
     } catch (err) {
       console.error(err);
-      setStatus('Connection Failed');
+      setStatus('Connection Failed. (Check console, you may have reached concurrency limits!)');
       setHasStarted(false);
     }
   };
@@ -141,7 +141,9 @@ export default function AnamAgent({ report }) {
               color: 'white',
               fontFamily: 'Inter, sans-serif',
               fontSize: '14px',
-              gap: '8px'
+              gap: '8px',
+              textAlign: 'center',
+              padding: '20px'
             }}>
               <Loader2 className="animate-spin" size={24} color="#f43f5e" />
               {status}
@@ -149,6 +151,7 @@ export default function AnamAgent({ report }) {
           )}
           
           <video 
+            id="anam-video-element"
             ref={videoRef}
             autoPlay 
             playsInline
@@ -160,7 +163,6 @@ export default function AnamAgent({ report }) {
               transition: 'opacity 0.5s ease'
             }}
           />
-          <audio ref={audioRef} autoPlay />
 
           {isConnected && (
             <div style={{
