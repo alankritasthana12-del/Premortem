@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
+import AnamAgent from '../components/AnamAgent';
 
 /* ─── Severity / Impact colour maps ─────────────────────────────────── */
 const SEV = {
@@ -874,6 +875,7 @@ export default function ReportPage() {
         )}
 
       </div>
+      <AnamAgent report={report} />
     </div>
   );
 }
