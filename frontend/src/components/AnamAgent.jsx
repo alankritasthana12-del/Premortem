@@ -54,16 +54,7 @@ export default function AnamAgent({ report }) {
   }, [report]);
 
   return (
-    <div style={{ 
-      position: 'fixed', 
-      bottom: '24px', 
-      right: '24px', 
-      zIndex: 9999,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      gap: '12px'
-    }}>
+    <>
       <button 
         onClick={() => {
           const success = injectContext();
@@ -74,24 +65,31 @@ export default function AnamAgent({ report }) {
           }
         }}
         style={{
+          position: 'fixed',
+          bottom: '420px', // Lifted high enough to clear the expanded widget
+          right: '24px',
+          zIndex: 10000,
           background: 'linear-gradient(90deg, #f43f5e, #fb923c)',
           color: 'white',
           border: 'none',
-          padding: '8px 16px',
+          padding: '10px 20px',
           borderRadius: '999px',
           cursor: 'pointer',
           fontWeight: 'bold',
-          fontSize: '12px',
-          boxShadow: '0 4px 12px rgba(244,63,94,0.3)',
+          fontSize: '13px',
+          boxShadow: '0 4px 16px rgba(244,63,94,0.4)',
           fontFamily: 'Inter, sans-serif'
         }}
       >
         🧠 Share Report with AI
       </button>
-      <anam-agent 
-        ref={agentRef}
-        agent-id="ebd4f7f8-ab8e-47a2-9d80-bde36011ef7c"
-      ></anam-agent>
-    </div>
+      
+      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999 }}>
+        <anam-agent 
+          ref={agentRef}
+          agent-id="ebd4f7f8-ab8e-47a2-9d80-bde36011ef7c"
+        ></anam-agent>
+      </div>
+    </>
   );
 }
