@@ -1,135 +1,197 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createClient } from '@anam-ai/js-sdk';
+import { Mic, MicOff, Loader2 } from 'lucide-react';
 
 export default function AnamAgent({ report }) {
-  const agentRef = useRef(null);
+  const videoRef = useRef(null);
+  const audioRef = useRef(null);
+  const [client, setClient] = useState(null);
+  const [status, setStatus] = useState('Initializing...');
+  const [isMuted, setIsMuted] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // We only start the connection when the user clicks "Start Session" to grant mic access
+  const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    if (!document.querySelector('script[src="https://unpkg.com/@anam-ai/agent-widget"]')) {
-      const script = document.createElement('script');
-      script.src = "https://unpkg.com/@anam-ai/agent-widget";
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
+    // Cleanup on unmount
+    return () => {
+      if (client) {
+        client.stopStreaming();
+      }
+    };
+  }, [client]);
 
-  const contextData = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report.
-  
-  REPORT DETAILS:
-  Startup Name: ${report?.startup?.name}
-  Threat Level: ${report?.overallRisk}%
-  Success Probability: ${report?.successProbability}%
-  Executive Summary: ${report?.executiveSummary || 'N/A'}`;
+  const startSession = async () => {
+    setHasStarted(true);
+    setStatus('Fetching token...');
+    
+    try {
+      // Fetch session token from backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/anam/token`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch token: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const sessionToken = data.sessionToken;
+      
+      setStatus('Connecting to Anam...');
+      
+      // Initialize the SDK Client
+      const anamClient = createClient(sessionToken, {
+        disableInputAudio: false
+      });
+      setClient(anamClient);
 
-  const injectContext = () => {
-    const el = agentRef.current;
-    if (!el) return false;
+      // Start the stream
+      if (videoRef.current && audioRef.current) {
+        await anamClient.streamToVideoAndAudioElements(videoRef.current, audioRef.current);
+        setStatus('Connected');
+        setIsConnected(true);
 
-    let success = false;
-
-    // Function to search an object for injection methods
-    const searchAndInject = (obj) => {
-      if (!obj) return false;
-      const methods = ['addContext', 'sendMessage', 'sendText', 'sendSystemMessage'];
-      for (let m of methods) {
-        if (typeof obj[m] === 'function') {
+        // Inject Context now that we are connected
+        if (report) {
+          const contextData = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report.
+          
+          REPORT DETAILS:
+          Startup Name: ${report?.startup?.name}
+          Threat Level: ${report?.overallRisk}%
+          Success Probability: ${report?.successProbability}%
+          Executive Summary: ${report?.executiveSummary || 'N/A'}`;
+          
           try {
-            obj[m](contextData);
-            console.log(`Successfully injected via ${m}`);
-            return true;
+            // Give it a brief moment to settle the WebRTC connection before sending context
+            setTimeout(() => {
+              anamClient.addContext(contextData);
+              console.log("Report Context Injected via SDK!");
+            }, 1000);
           } catch (e) {
-            console.error(`Error calling ${m}:`, e);
+            console.error("Context injection failed", e);
           }
         }
       }
-      return false;
-    };
-
-    // 1. Check directly on the element
-    if (searchAndInject(el)) success = true;
-
-    // 2. Search properties of the element (like .anamClient, .client, .session, etc.)
-    if (!success) {
-      for (let key in el) {
-        try {
-          if (el[key] && typeof el[key] === 'object') {
-             if (searchAndInject(el[key])) {
-                success = true;
-                break;
-             }
-          }
-        } catch (e) {} // ignore cross-origin or getter errors
-      }
+    } catch (err) {
+      console.error(err);
+      setStatus('Connection Failed');
+      setHasStarted(false);
     }
-
-    // 3. Fallback: try setting every conceivable attribute
-    if (!success) {
-      el.setAttribute('context', contextData);
-      el.setAttribute('system-prompt', contextData);
-      el.setAttribute('systemPrompt', contextData);
-      el.setAttribute('data-context', contextData);
-      el.context = contextData;
-      el.systemPrompt = contextData;
-    }
-
-    return success;
   };
 
-  useEffect(() => {
-    const el = agentRef.current;
-    if (!el) return;
-
-    // Listen to all likely Anam events to inject context automatically when the session starts
-    const events = ['anam-session-ready', 'SESSION_READY', 'anam-connection-established', 'CONNECTION_ESTABLISHED'];
-    const handleEvent = () => {
-      injectContext();
-    };
-
-    events.forEach(ev => el.addEventListener(ev, handleEvent));
-    window.addEventListener('anam-session-ready', handleEvent);
-
-    return () => {
-      events.forEach(ev => el.removeEventListener(ev, handleEvent));
-      window.removeEventListener('anam-session-ready', handleEvent);
-    };
-  }, [report]);
+  const toggleMute = () => {
+    if (client) {
+      if (isMuted) {
+        client.unmuteMic();
+      } else {
+        client.muteMic();
+      }
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
-    <>
-      <button 
-        onClick={() => {
-          const success = injectContext();
-          if (success) {
-            alert("Report successfully loaded into the AI's memory! She can now see it.");
-          } else {
-            alert("Please start the AI session first by clicking the widget and granting microphone access, then click this button again.");
-          }
-        }}
-        style={{
-          position: 'fixed',
-          bottom: '420px', // Lifted high enough to clear the expanded widget
-          right: '24px',
-          zIndex: 10000,
-          background: 'linear-gradient(90deg, #f43f5e, #fb923c)',
-          color: 'white',
-          border: 'none',
-          padding: '10px 20px',
-          borderRadius: '999px',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          fontSize: '13px',
-          boxShadow: '0 4px 16px rgba(244,63,94,0.4)',
-          fontFamily: 'Inter, sans-serif'
-        }}
-      >
-        🧠 Share Report with AI
-      </button>
-      
-      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999 }}>
-        <anam-agent 
-          ref={agentRef}
-          agent-id="ebd4f7f8-ab8e-47a2-9d80-bde36011ef7c"
-        ></anam-agent>
-      </div>
-    </>
+    <div style={{ 
+      position: 'fixed', 
+      bottom: '24px', 
+      right: '24px', 
+      zIndex: 9999,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: '12px',
+      width: '300px'
+    }}>
+      {!hasStarted ? (
+        <button 
+          onClick={startSession}
+          style={{
+            background: 'linear-gradient(90deg, #f43f5e, #fb923c)',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '999px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            boxShadow: '0 4px 16px rgba(244,63,94,0.4)',
+            fontFamily: 'Inter, sans-serif'
+          }}
+        >
+          👋 Talk to Liv
+        </button>
+      ) : (
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '9/16',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          backgroundColor: '#111',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          border: '1px solid rgba(255,255,255,0.1)'
+        }}>
+          {!isConnected && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '14px',
+              gap: '8px'
+            }}>
+              <Loader2 className="animate-spin" size={24} color="#f43f5e" />
+              {status}
+            </div>
+          )}
+          
+          <video 
+            ref={videoRef}
+            autoPlay 
+            playsInline
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: isConnected ? 1 : 0,
+              transition: 'opacity 0.5s ease'
+            }}
+          />
+          <audio ref={audioRef} autoPlay />
+
+          {isConnected && (
+            <div style={{
+              position: 'absolute',
+              bottom: '16px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: '8px'
+            }}>
+              <button 
+                onClick={toggleMute}
+                style={{
+                  background: isMuted ? '#f43f5e' : 'rgba(0,0,0,0.5)',
+                  backdropFilter: 'blur(4px)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
