@@ -26,8 +26,29 @@ export default function AnamAgent({ report }) {
     setStatus('Fetching token...');
     
     try {
-      // Fetch session token from backend
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://premortem-backend.onrender.com'}/anam/token`);
+      // Build the system prompt to override the default persona behavior
+      let systemPrompt = "";
+      if (report) {
+        systemPrompt = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report. If the user asks about the report, YOU HAVE FULL ACCESS TO IT BELOW.
+        
+        REPORT DETAILS:
+        Startup Name: ${report?.startup?.name}
+        Threat Level: ${report?.overallRisk}%
+        Success Probability: ${report?.successProbability}%
+        Executive Summary: ${report?.executiveSummary || 'N/A'}`;
+      }
+
+      // Fetch session token from backend, passing the overriding system prompt
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://premortem-backend.onrender.com'}/anam/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          systemPrompt: systemPrompt
+        })
+      });
+      
       if (!response.ok) {
         throw new Error(`Failed to fetch token: ${response.statusText}`);
       }
@@ -43,28 +64,10 @@ export default function AnamAgent({ report }) {
       });
       setClient(anamClient);
 
-      // Listen for when the connection is fully established before sending context
+      // Listen for when the connection is fully established
       anamClient.addListener(AnamEvent.CONNECTION_ESTABLISHED, () => {
         setStatus('Connected');
         setIsConnected(true);
-
-        if (report) {
-          const contextData = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report.
-          
-          REPORT DETAILS:
-          Startup Name: ${report?.startup?.name}
-          Threat Level: ${report?.overallRisk}%
-          Success Probability: ${report?.successProbability}%
-          Executive Summary: ${report?.executiveSummary || 'N/A'}`;
-          
-          try {
-            // Send the context
-            anamClient.addContext(contextData);
-            console.log("Report Context Injected via SDK!");
-          } catch (e) {
-            console.error("Context injection failed", e);
-          }
-        }
       });
 
       // Start the stream

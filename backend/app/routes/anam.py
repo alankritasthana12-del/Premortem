@@ -5,16 +5,26 @@ from app.core.config import settings
 
 router = APIRouter()
 
+class AnamTokenRequest(BaseModel):
+    systemPrompt: str = None
+
 class AnamTokenResponse(BaseModel):
     sessionToken: str
 
-@router.get("/token", response_model=AnamTokenResponse)
-async def get_anam_session_token():
+@router.post("/token", response_model=AnamTokenResponse)
+async def get_anam_session_token(request: AnamTokenRequest):
     if not settings.ANAM_API_KEY:
         raise HTTPException(status_code=500, detail="ANAM_API_KEY is not configured on the server")
         
     # The agent ID you've been using
     agent_id = "ebd4f7f8-ab8e-47a2-9d80-bde36011ef7c"
+    
+    persona_config = {
+        "personaId": agent_id
+    }
+    
+    if request.systemPrompt:
+        persona_config["systemPrompt"] = request.systemPrompt
     
     try:
         async with httpx.AsyncClient() as client:
@@ -25,9 +35,7 @@ async def get_anam_session_token():
                     "Authorization": f"Bearer {settings.ANAM_API_KEY}"
                 },
                 json={
-                    "personaConfig": {
-                        "personaId": agent_id
-                    }
+                    "personaConfig": persona_config
                 },
                 timeout=10.0
             )
