@@ -21,17 +21,57 @@ export default function AnamAgent({ report }) {
   Executive Summary: ${report?.executiveSummary || 'N/A'}`;
 
   const injectContext = () => {
-    if (agentRef.current && typeof agentRef.current.addContext === 'function') {
-      try {
-        agentRef.current.addContext(contextData);
-        console.log("Anam context injected successfully.");
-        return true;
-      } catch (e) {
-        console.error("Failed to inject Anam context", e);
-        return false;
+    const el = agentRef.current;
+    if (!el) return false;
+
+    let success = false;
+
+    // Function to search an object for injection methods
+    const searchAndInject = (obj) => {
+      if (!obj) return false;
+      const methods = ['addContext', 'sendMessage', 'sendText', 'sendSystemMessage'];
+      for (let m of methods) {
+        if (typeof obj[m] === 'function') {
+          try {
+            obj[m](contextData);
+            console.log(`Successfully injected via ${m}`);
+            return true;
+          } catch (e) {
+            console.error(`Error calling ${m}:`, e);
+          }
+        }
+      }
+      return false;
+    };
+
+    // 1. Check directly on the element
+    if (searchAndInject(el)) success = true;
+
+    // 2. Search properties of the element (like .anamClient, .client, .session, etc.)
+    if (!success) {
+      for (let key in el) {
+        try {
+          if (el[key] && typeof el[key] === 'object') {
+             if (searchAndInject(el[key])) {
+                success = true;
+                break;
+             }
+          }
+        } catch (e) {} // ignore cross-origin or getter errors
       }
     }
-    return false;
+
+    // 3. Fallback: try setting every conceivable attribute
+    if (!success) {
+      el.setAttribute('context', contextData);
+      el.setAttribute('system-prompt', contextData);
+      el.setAttribute('systemPrompt', contextData);
+      el.setAttribute('data-context', contextData);
+      el.context = contextData;
+      el.systemPrompt = contextData;
+    }
+
+    return success;
   };
 
   useEffect(() => {
