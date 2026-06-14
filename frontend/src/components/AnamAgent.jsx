@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createClient } from '@anam-ai/js-sdk';
+import { createClient, AnamEvent } from '@anam-ai/js-sdk';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 
 export default function AnamAgent({ report }) {
   const videoRef = useRef(null);
-  const audioRef = useRef(null);
   const [client, setClient] = useState(null);
   const [status, setStatus] = useState('Initializing...');
   const [isMuted, setIsMuted] = useState(false);
@@ -44,13 +43,11 @@ export default function AnamAgent({ report }) {
       });
       setClient(anamClient);
 
-      // Start the stream
-      if (document.getElementById('anam-video-element')) {
-        await anamClient.streamToVideoElement('anam-video-element');
+      // Listen for when the connection is fully established before sending context
+      anamClient.addListener(AnamEvent.CONNECTION_ESTABLISHED, () => {
         setStatus('Connected');
         setIsConnected(true);
 
-        // Inject Context now that we are connected
         if (report) {
           const contextData = `CRITICAL INSTRUCTION: You are an AI assistant whose SOLE purpose is to explain the following startup analysis report. Do not answer questions outside the scope of this report.
           
@@ -61,16 +58,20 @@ export default function AnamAgent({ report }) {
           Executive Summary: ${report?.executiveSummary || 'N/A'}`;
           
           try {
-            // Give it a brief moment to settle the WebRTC connection before sending context
-            setTimeout(() => {
-              anamClient.addContext(contextData);
-              console.log("Report Context Injected via SDK!");
-            }, 1000);
+            // Send the context
+            anamClient.addContext(contextData);
+            console.log("Report Context Injected via SDK!");
           } catch (e) {
             console.error("Context injection failed", e);
           }
         }
+      });
+
+      // Start the stream
+      if (document.getElementById('anam-video-element')) {
+        await anamClient.streamToVideoElement('anam-video-element');
       }
+
     } catch (err) {
       console.error(err);
       setStatus('Connection Failed. (Check console, you may have reached concurrency limits!)');
