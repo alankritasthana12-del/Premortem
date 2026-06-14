@@ -28,7 +28,7 @@ export default function AnamAgent({ report }) {
     
     try {
       // Fetch session token from backend
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/anam/token`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://premortem-backend.onrender.com'}/anam/token`);
       if (!response.ok) {
         throw new Error(`Failed to fetch token: ${response.statusText}`);
       }
