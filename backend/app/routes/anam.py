@@ -19,12 +19,18 @@ async def get_anam_session_token(request: AnamTokenRequest):
     # The agent ID you've been using
     agent_id = "ebd4f7f8-ab8e-47a2-9d80-bde36011ef7c"
     
-    persona_config = {
-        "personaId": agent_id
-    }
-    
     if request.systemPrompt:
-        persona_config["systemPrompt"] = request.systemPrompt
+        # For dynamic prompts, we must use an ephemeral session and omit personaId
+        persona_config = {
+            "avatarId": "960f614f-ea88-47c3-9883-f02094f70874",
+            "voiceId": "c48c4dd9-5050-11f1-9076-5e955d484d11",
+            "llmId": "9d8900ee-257d-4401-8817-ba9c835e9d36",
+            "systemPrompt": request.systemPrompt
+        }
+    else:
+        persona_config = {
+            "personaId": agent_id
+        }
     
     try:
         async with httpx.AsyncClient() as client:
