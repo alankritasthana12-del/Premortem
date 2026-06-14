@@ -33,8 +33,11 @@ async def analyze_startup(startup_data: StartupSubmission):
 
 from app.db.supabase_store import fetch_history_from_cloud
 from app.models.schemas import ChatRequest
+from app.core.config import settings
 import google.generativeai as genai
 import json
+
+genai.configure(api_key=settings.GEMINI_API_KEY)
 
 @router.get("/history/{user_id}")
 async def get_user_history(user_id: str):
