@@ -206,7 +206,7 @@ export default function ChatAgent({ report }) {
       chatHistoryRef.current.push({ role: 'assistant', content: replyText });
       speakText(replyText);
     } catch (err) {
-      console.error('Chat error:', err.response?.data || err);
+      console.error('Chat error:', err.response?.data?.detail || err.message || err);
       speakText("Sorry, I had trouble processing that.");
     } finally {
       setIsLoading(false);
