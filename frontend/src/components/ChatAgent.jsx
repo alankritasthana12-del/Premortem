@@ -11,6 +11,11 @@ export default function ChatAgent({ report }) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isListening, setIsListening] = useState(false);
   
+  // Drag state
+  const [position, setPosition] = useState({ x: 24, y: 24 });
+  const isDragging = useRef(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  
   const recognitionRef = useRef(null);
   const isIntentionalStopRef = useRef(false);
   const chatHistoryRef = useRef([]);
@@ -55,11 +60,13 @@ export default function ChatAgent({ report }) {
         setIsListening(false);
         // Auto-restart if it wasn't intentionally stopped and modal is still open
         if (!isIntentionalStopRef.current && isOpen) {
-          try {
-            recognition.start();
-          } catch (e) {
-            console.error("Failed to restart recognition", e);
-          }
+          setTimeout(() => {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.error("Failed to restart recognition", e);
+            }
+          }, 200);
         }
       };
 
@@ -79,7 +86,54 @@ export default function ChatAgent({ report }) {
     }
   }, [soundEnabled, isOpen, report]);
 
-  const toggleListen = () => {
+  // Drag logic
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging.current) return;
+      setPosition({
+        x: e.clientX - dragStartPos.current.x,
+        y: window.innerHeight - e.clientY - dragStartPos.current.y
+      });
+    };
+
+    const handleMouseUp = () => {
+      isDragging.current = false;
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isOpen]);
+
+  const handleDragStart = (e) => {
+    isDragging.current = true;
+    dragStartPos.current = {
+      x: e.clientX - position.x,
+      y: (window.innerHeight - e.clientY) - position.y
+    };
+  };
+
+  const handleMicClick = () => {
+    // 1. If she is speaking, ALWAYS shut her up when mic is clicked
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      
+      // Make sure mic is turned on to capture the interruption
+      if (!isListening) {
+        isIntentionalStopRef.current = false;
+        try { recognitionRef.current?.start(); } catch(e){}
+      }
+      return;
+    }
+
+    // 2. Normal toggle
     if (isListening) {
       isIntentionalStopRef.current = true;
       recognitionRef.current?.stop();
@@ -102,7 +156,6 @@ export default function ChatAgent({ report }) {
     
     // Find a high-quality female voice
     const voices = window.speechSynthesis.getVoices();
-    // Prioritize natural/online voices over robotic defaults
     let femaleVoice = voices.find(v => (v.name.includes('Online') || v.name.includes('Natural')) && (v.name.includes('Female') || v.name.includes('Aria') || v.name.includes('Jenny')));
     if (!femaleVoice) {
         femaleVoice = voices.find(v => v.name.includes('Google') && v.name.includes('US') && v.name.includes('English'));
@@ -150,25 +203,16 @@ export default function ChatAgent({ report }) {
   if (!isOpen) {
     return (
       <button 
+        className="pm-btn-primary"
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
           bottom: '24px',
           left: '24px',
           zIndex: 9999,
-          background: 'var(--primary)',
-          color: 'white',
-          border: 'none',
           borderRadius: '99px',
           padding: '12px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          fontSize: '15px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(99,102,241,0.3)',
-          transition: 'all 0.2s',
+          boxShadow: '0 8px 32px rgba(220,38,38,0.3)',
         }}
       >
         <MessageSquare size={18} />
@@ -180,10 +224,10 @@ export default function ChatAgent({ report }) {
   return (
     <div style={{
       position: 'fixed',
-      bottom: '24px',
-      left: '24px',
-      width: '380px',
-      height: '600px',
+      bottom: `${position.y}px`,
+      left: `${position.x}px`,
+      maxWidth: '85vw',
+      maxHeight: '85vh',
       background: '#000',
       border: '1px solid rgba(255,255,255,0.1)',
       borderRadius: '24px',
@@ -193,9 +237,8 @@ export default function ChatAgent({ report }) {
       overflow: 'hidden',
       boxShadow: '0 24px 48px rgba(0,0,0,0.5)',
     }}>
-      {/* 2D Photo Avatar (Full Screen) */}
+      {/* 2D Photo Avatar (Auto Size) */}
       <div style={{ 
-        flex: 1,
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
@@ -208,7 +251,7 @@ export default function ChatAgent({ report }) {
             position: 'absolute',
             width: '200px',
             height: '200px',
-            background: 'var(--primary)',
+            background: 'var(--accent)',
             borderRadius: '50%',
             filter: 'blur(60px)',
             opacity: 0.5,
@@ -219,34 +262,42 @@ export default function ChatAgent({ report }) {
         <img 
           src="/avatar.jpg" 
           alt="Liv Avatar" 
+          draggable="false"
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
+            width: '320px', /* Base width */
+            maxWidth: '100%',
+            height: 'auto', /* Aspect ratio maintained naturally */
+            maxHeight: '80vh',
+            objectFit: 'contain',
             zIndex: 1,
             transition: 'transform 0.3s ease',
             transform: isSpeaking ? 'scale(1.03)' : 'scale(1)'
           }} 
         />
         
-        {/* Top Controls Overlay */}
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0,
-          padding: '16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)',
-          zIndex: 2
-        }}>
+        {/* Top Drag Handle Overlay */}
+        <div 
+          onMouseDown={handleDragStart}
+          style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0,
+            padding: '16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)',
+            zIndex: 2,
+            cursor: 'grab',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div className={isSpeaking ? 'pulse-dot' : ''} style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 12px #22c55e' }} />
             <span style={{ fontWeight: 600, fontSize: 15, color: 'white', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Liv (AI)</span>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
             <button 
-              onClick={() => {
+              onClick={(e) => {
+                  e.stopPropagation();
                   setSoundEnabled(!soundEnabled);
                   if (soundEnabled) window.speechSynthesis.cancel();
               }}
@@ -255,7 +306,8 @@ export default function ChatAgent({ report }) {
               {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
             </button>
             <button 
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 isIntentionalStopRef.current = true;
                 recognitionRef.current?.stop();
                 setIsOpen(false);
@@ -275,7 +327,8 @@ export default function ChatAgent({ report }) {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '16px',
-          zIndex: 2
+          zIndex: 2,
+          pointerEvents: 'none' /* let dragging pass through unless on button */
         }}>
           {isLoading && (
             <div style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', padding: '8px 16px', borderRadius: '99px', color: 'white', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -284,9 +337,10 @@ export default function ChatAgent({ report }) {
           )}
           
           <button
-            onClick={toggleListen}
+            onClick={handleMicClick}
             style={{
-              background: isListening ? '#f43f5e' : 'rgba(0,0,0,0.6)',
+              pointerEvents: 'auto',
+              background: isListening ? 'var(--accent)' : 'rgba(0,0,0,0.6)',
               backdropFilter: 'blur(8px)',
               border: isListening ? 'none' : '1px solid rgba(255,255,255,0.2)',
               width: '64px',
@@ -298,20 +352,11 @@ export default function ChatAgent({ report }) {
               color: 'white',
               cursor: 'pointer',
               transition: 'all 0.3s',
-              boxShadow: isListening ? '0 0 24px rgba(244,63,94,0.5)' : '0 8px 16px rgba(0,0,0,0.3)'
+              boxShadow: isListening ? '0 0 24px rgba(220,38,38,0.5)' : '0 8px 16px rgba(0,0,0,0.3)'
             }}
           >
             <Mic size={24} className={isListening ? 'pulse' : ''} />
           </button>
-          
-          <div style={{ 
-            fontSize: 12, 
-            color: 'rgba(255,255,255,0.8)',
-            textShadow: '0 2px 4px rgba(0,0,0,0.8)',
-            fontWeight: 500
-          }}>
-            {isSpeaking ? 'Speaking...' : isListening ? 'Listening (Always On)...' : 'Microphone Paused'}
-          </div>
         </div>
       </div>
 
