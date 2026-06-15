@@ -82,4 +82,4 @@ REPORT DATA (JSON FORMAT):
         return {"response": response.text}
     except Exception as e:
         print(f"Unhandled error in chat route: {e}")
-        raise HTTPException(status_code=500, detail="An error occurred during chat.")
+        raise HTTPException(status_code=500, detail=str(e))

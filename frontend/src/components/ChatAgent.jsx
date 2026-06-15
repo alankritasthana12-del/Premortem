@@ -198,7 +198,7 @@ export default function ChatAgent({ report }) {
     try {
       const response = await axios.post(`${API_URL}/analyze/chat`, {
         message: transcriptText,
-        history: chatHistoryRef.current,
+        history: chatHistoryRef.current.slice(0, -1), // Exclude the message we just pushed
         report: report || {}
       });
 
@@ -206,7 +206,7 @@ export default function ChatAgent({ report }) {
       chatHistoryRef.current.push({ role: 'assistant', content: replyText });
       speakText(replyText);
     } catch (err) {
-      console.error('Chat error:', err);
+      console.error('Chat error:', err.response?.data || err);
       speakText("Sorry, I had trouble processing that.");
     } finally {
       setIsLoading(false);
