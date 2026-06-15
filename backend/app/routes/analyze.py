@@ -34,10 +34,11 @@ async def analyze_startup(startup_data: StartupSubmission):
 from app.db.supabase_store import fetch_history_from_cloud
 from app.models.schemas import ChatRequest
 from app.core.config import settings
-import google.generativeai as genai
+import groq
 import json
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
+# Initialize the Groq client
+client = groq.Groq(api_key=settings.GROQ_API_KEY)
 
 @router.get("/history/{user_id}")
 async def get_user_history(user_id: str):
@@ -66,28 +67,28 @@ STARTUP IDEA / MARKET: {request.report.get('startup', {}).get('idea', 'N/A')}
 REPORT DATA (JSON FORMAT):
 {json.dumps(request.report, indent=2)[:8000]}"""
 
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            system_instruction=system_instruction
-        )
-
         history_formatted = []
         for msg in request.history:
-            role = "user" if msg.role == "user" else "model"
+            role = "user" if msg.role == "user" else "assistant"
             if history_formatted and history_formatted[-1]["role"] == role:
-                history_formatted[-1]["parts"][0] += f"\n\n{msg.content}"
+                history_formatted[-1]["content"] += f"\n\n{msg.content}"
             else:
-                history_formatted.append({"role": role, "parts": [msg.content]})
+                history_formatted.append({"role": role, "content": msg.content})
         
         # chat.send_message() will automatically append a 'user' turn. 
-        # If history_formatted already ends with 'user', Gemini will crash.
-        # So we pop the last user turn and combine it with the new message.
-        if history_formatted and history_formatted[-1]["role"] == "user":
-            last_user = history_formatted.pop()
-            request.message = last_user["parts"][0] + f"\n\n{request.message}"
+        # For Groq, we just append the new message to the history and send it.
+        history_formatted.append({"role": "user", "content": request.message})
             
-        chat = model.start_chat(history=history_formatted)
-        response = chat.send_message(request.message)
+        messages = [{"role": "system", "content": system_instruction}] + history_formatted
+        
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1000
+        )
+        
+        return {"response": response.choices[0].message.content}
         
         return {"response": response.text}
     except Exception as e:

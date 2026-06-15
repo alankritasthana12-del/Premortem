@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")

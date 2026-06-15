@@ -1,4 +1,4 @@
-import google.generativeai as genai
+import groq
 import json
 import uuid
 from datetime import datetime
@@ -6,19 +6,11 @@ from app.core.config import settings
 from app.core.prompts import get_system_prompt
 from app.models.schemas import StartupSubmission
 
-# Initialize the Gemini client configuration
-genai.configure(api_key=settings.GEMINI_API_KEY)
+# Initialize the Groq client
+client = groq.Groq(api_key=settings.GROQ_API_KEY)
 
 async def generate_premortem_report(startup_data: StartupSubmission, context: str = "") -> dict:
     system_instruction = get_system_prompt(context)
-    model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
-        system_instruction=system_instruction,
-        generation_config=genai.types.GenerationConfig(
-            max_output_tokens=65536,
-            temperature=0.7,
-        )
-    )
     
     prompt = f"""
     Analyze the following startup:
@@ -36,8 +28,18 @@ async def generate_premortem_report(startup_data: StartupSubmission, context: st
     Each persona MUST be present. Missing any persona is incorrect output.
     """
     
-    response = model.generate_content(prompt)
-    raw_text = response.text
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7,
+        max_tokens=8000,
+        response_format={"type": "json_object"}
+    )
+    
+    raw_text = response.choices[0].message.content
     
     # Safely extract JSON in case the model wrapped it in markdown
     json_text = raw_text.strip()
