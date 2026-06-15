@@ -207,7 +207,11 @@ export default function ChatAgent({ report }) {
       speakText(replyText);
     } catch (err) {
       console.error('Chat error:', err.response?.data?.detail || err.message || err);
-      speakText("Sorry, I had trouble processing that.");
+      if (err.response?.status === 429) {
+        speakText("I'm getting a little overwhelmed! Give me just a few seconds to catch my breath before you ask the next question.");
+      } else {
+        speakText("Sorry, I had trouble processing that.");
+      }
     } finally {
       setIsLoading(false);
     }
