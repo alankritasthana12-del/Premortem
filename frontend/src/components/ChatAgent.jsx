@@ -25,27 +25,37 @@ export default function ChatAgent({ report }) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition && isOpen) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = true; // Stay on continuously
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true; // Enable interim results for instant reaction
       recognition.lang = 'en-US';
 
       recognition.onstart = () => {
         setIsListening(true);
       };
 
+      // Fired the millisecond sound is detected
+      recognition.onspeechstart = () => {
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+          setIsSpeaking(false);
+        }
+      };
+
       recognition.onresult = (event) => {
-        // Get the latest transcript from the continuous results
         const lastResultIndex = event.results.length - 1;
-        const transcript = event.results[lastResultIndex][0].transcript;
+        const result = event.results[lastResultIndex];
         
-        // BARGE-IN LOGIC: If the AI is speaking and user speaks, shut her up instantly
+        // INSTANT BARGE-IN: If AI is speaking and ANY sound is picked up, shut her up immediately.
         if (window.speechSynthesis.speaking) {
           window.speechSynthesis.cancel();
           setIsSpeaking(false);
         }
         
-        // Automatically send the message
-        handleSendVoice(transcript);
+        // Only send to Gemini once the user has finished their sentence
+        if (result.isFinal) {
+          const transcript = result[0].transcript;
+          handleSendVoice(transcript);
+        }
       };
 
       recognition.onerror = (event) => {
