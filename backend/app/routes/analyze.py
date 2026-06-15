@@ -57,6 +57,10 @@ If the user asks about the report or any specific part of it, YOU HAVE FULL ACCE
 You should be able to explain the strengths, weaknesses, scenarios, and personas in detail. 
 Keep your responses conversational, concise, and professional.
 
+IMPORTANT VOICE SYNTHESIS RULE: Your response is being read aloud by a text-to-speech engine. 
+DO NOT use ANY Markdown formatting. Do not use asterisks (*), bolding, bullet points, or hash marks (#).
+Respond in pure, conversational plain text only.
+
 STARTUP IDEA / MARKET: {request.report.get('startup', {}).get('idea', 'N/A')}
 
 REPORT DATA (JSON FORMAT):

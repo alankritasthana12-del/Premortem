@@ -158,8 +158,11 @@ export default function ChatAgent({ report }) {
     }
   };
 
-  const speakText = (text) => {
+  const speakText = (rawText) => {
     if (!soundEnabled || !('speechSynthesis' in window)) return;
+    
+    // Strip markdown formatting characters so she doesn't read them aloud
+    const text = rawText.replace(/[*#_`]/g, '');
     
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
