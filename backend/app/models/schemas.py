@@ -9,12 +9,3 @@ class StartupSubmission(BaseModel):
     competitors: str
     stage: str
     user_id: Optional[str] = None
-
-class ChatMessage(BaseModel):
-    role: str
-    content: str
-
-class ChatRequest(BaseModel):
-    message: str
-    history: list[ChatMessage]
-    report: dict

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import ChatAgent from '../components/ChatAgent';
 
 /* ─── Severity / Impact colour maps ─────────────────────────────────── */
 const SEV = {
@@ -873,9 +872,7 @@ export default function ReportPage() {
             </div>
           </div>
         )}
-
       </div>
-      <ChatAgent report={report} />
     </div>
   );
 }
