@@ -29,20 +29,22 @@ async def generate_premortem_report(startup_data: StartupSubmission, context: st
     """
     
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.8-27b",
         messages=[
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": prompt}
         ],
         temperature=0.7,
-        max_tokens=8000,
-        response_format={"type": "json_object"}
+        max_tokens=8000
     )
     
     raw_text = response.choices[0].message.content
     
-    # Safely extract JSON in case the model wrapped it in markdown
-    json_text = raw_text.strip()
+    # Strip Qwen's <think>...</think> reasoning block if present
+    import re
+    json_text = re.sub(r'<think>.*?</think>', '', raw_text, flags=re.DOTALL).strip()
+    
+    # Strip markdown code fences
     if json_text.startswith("```json"):
         json_text = json_text[7:]
     elif json_text.startswith("```"):
@@ -50,6 +52,13 @@ async def generate_premortem_report(startup_data: StartupSubmission, context: st
     if json_text.endswith("```"):
         json_text = json_text[:-3]
     json_text = json_text.strip()
+    
+    # Last resort: extract JSON object between first { and last }
+    if not json_text.startswith("{"):
+        start = json_text.find("{")
+        end = json_text.rfind("}")
+        if start != -1 and end != -1:
+            json_text = json_text[start:end+1]
     
     try:
         report_data = json.loads(json_text)

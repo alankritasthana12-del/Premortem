@@ -16,20 +16,24 @@ async def analyze_startup(startup_data: StartupSubmission):
         # Pass the context into the LLM service
         report = await generate_premortem_report(startup_data, context)
         
+        # Try to save to Supabase, but don't let it block the response
         if startup_data.user_id:
-            await save_report_to_cloud(
-                user_id=startup_data.user_id,
-                project_name=startup_data.name,
-                threat_score=report.get("overallRisk", 0),
-                report_payload=report
-            )
+            try:
+                await save_report_to_cloud(
+                    user_id=startup_data.user_id,
+                    project_name=startup_data.name,
+                    threat_score=report.get("overallRisk", 0),
+                    report_payload=report
+                )
+            except Exception as db_err:
+                print(f"[Premortem] Supabase save failed (non-blocking): {db_err}")
             
         return report
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         print(f"Unhandled error in analyze route: {e}")
-        raise HTTPException(status_code=500, detail="An error occurred while analyzing the startup.")
+        raise HTTPException(status_code=500, detail=str(e))
 
 from app.db.supabase_store import fetch_history_from_cloud
 from app.core.config import settings
